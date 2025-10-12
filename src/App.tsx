@@ -16,7 +16,9 @@ function App() {
         <Navbar />
         <Sidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
 
-  <main style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }} className={`main-content w-full`}>
+  <main
+    style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }}
+    className={`main-content w-full ${sidebarCollapsed ? 'has-collapsed-sidebar' : 'has-expanded-sidebar'}`}>
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -26,11 +28,11 @@ function App() {
           </AnimatePresence>
         </main>
 
-        <footer className="w-full">
-          <div style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }} className={`w-full main-content py-6 mt-16 border-t dotted-line`}>
-            <div className="px-8 content-column w-full flex justify-between items-center">
-                <div className="text-sm text-gray-600">Designed in Framer By Alexander</div>
-                <div className="text-sm text-gray-600">© Copyright 2025</div>
+        <footer className="w-full mt-8">
+          <div style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }} className={`w-full main-content ${sidebarCollapsed ? 'has-collapsed-sidebar' : 'has-expanded-sidebar'} py-6 dotted-line`}>
+            <div className="content-column w-full footer-content text-sm" style={{ color: 'var(--muted)' }}>
+                <div>Designed with React by Alexander</div>
+                <div>© Copyright 2025</div>
             </div>
           </div>
         </footer>

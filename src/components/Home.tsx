@@ -8,16 +8,16 @@ const Home = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen pt-20 md:pt-16 px-6"
+      className="min-h-screen pt-16 px-6"
     >
-  <div className="mb-10 md:mb-12 content-column">
+  <div className="mb-12 content-column">
         <div className="mb-6">
           <span className="available-pill">
             <span className="w-2 h-2 bg-green-400 rounded-full" /> Available for Work
           </span>
         </div>
 
-        <h1 className="text-5xl font-semibold text-accent mb-4">
+        <h1 className="text-5xl font-medium text-accent mb-4">
           Hey, I'm Alexander!
         </h1>
         <h2 className="text-xl text-gray-600 mb-6">Web & Visual Designer</h2>
@@ -35,12 +35,12 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="w-full h-[1px] my-10 md:my-12 border-t dotted-line" />
+      <div className="w-full h-[1px] my-12 border-t border-dashed border-[#2D2D3B]" />
 
-      <section className="mb-10 md:mb-12">
+      <section className="mb-8">
         <div className="content-column w-full">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[28px] text-accent font-semibold">Selected Projects</h3>
+            <h3 className="text-[28px] text-accent font-medium">Selected Projects</h3>
             <Link to="/projects" className="btn-secondary">All Projects</Link>
           </div>
 
@@ -67,7 +67,7 @@ const Home = () => {
 
       <section className="mb-8">
         <div className="content-column w-full">
-          <h4 className="text-[28px] text-accent font-semibold mb-4">My Stack</h4>
+          <h4 className="text-[28px] text-accent font-medium mb-8">My Stack</h4>
         </div>
         <div className="content-column w-full">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 stack-grid">

@@ -101,8 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
       </div>
 
       <div className="px-2">
-        <div className="border-b border-dashed mb-4" 
-          style={{ borderColor: 'var(--border)' }}>
+        <div className="border-t dotted-line mb-4 pt-4">
           <div className="text-sm pb-4 sidebar-subtitle"
             style={{ color: 'var(--muted)' }}>
             Follow Me
