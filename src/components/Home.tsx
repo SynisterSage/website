@@ -8,16 +8,16 @@ const Home = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen pt-16 px-6"
+      className="min-h-screen page-pad"
     >
-  <div className="mb-12 content-column">
+  <div className="content-column home-page mb-6">
         <div className="mb-6">
           <span className="available-pill">
             <span className="w-2 h-2 bg-green-400 rounded-full" /> Available for Work
           </span>
         </div>
 
-        <h1 className="text-5xl font-medium text-accent mb-4">
+        <h1 className="text-5xl font-semibold text-accent mb-4">
           Hey, I'm Alexander!
         </h1>
         <h2 className="text-xl text-gray-600 mb-6">Web & Visual Designer</h2>
@@ -33,44 +33,36 @@ const Home = () => {
           <Link to="/contact" className="btn-primary">Get in Touch</Link>
           <a href="#" className="btn-secondary">View Resume</a>
         </div>
-      </div>
 
-      <div className="w-full h-[1px] my-12 border-t border-dashed border-[#2D2D3B]" />
+        <div className="w-full h-[1px] my-12 border-t dotted-line" />
 
-      <section className="mb-8">
-        <div className="content-column w-full">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[28px] text-accent font-medium">Selected Projects</h3>
-            <Link to="/projects" className="btn-secondary">All Projects</Link>
-          </div>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-[28px] text-accent font-semibold">Selected Projects</h3>
+          <Link to="/projects" className="btn-secondary">All Projects</Link>
+        </div>
 
-          <div className="projects-frame">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {projects.slice(0,3).map(p => (
-            <div key={p.id} className="group cursor-pointer project-card-hover">
-              <div className="relative project-card mb-2">
-                <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder" />
-                {/* overlay badge spanning inside the card with balanced padding */}
-                <div className="absolute left-3 right-3 bottom-3">
-                  <div className="project-badge glass-heavy">
-                    <div className="text-sm font-medium">{p.title}</div>
-                    <div className="text-xs text-gray-300">{p.categories.join(' • ')}</div>
+        <div className="projects-frame">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {projects.slice(0,3).map(p => (
+              <div key={p.id} className="group cursor-pointer project-card-hover">
+                <div className="relative project-card mb-2">
+                  <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder" />
+                  <div className="absolute left-3 right-3 bottom-3">
+                    <div className="project-badge glass-heavy">
+                      <div className="text-sm font-medium">{p.title}</div>
+                      <div className="text-xs text-gray-300">{p.categories.join(' • ')}</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-            </div>
+            ))}
           </div>
         </div>
-      </section>
 
-      <section className="mb-8">
-        <div className="content-column w-full">
-          <h4 className="text-[28px] text-accent font-medium mb-8">My Stack</h4>
-        </div>
-        <div className="content-column w-full">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 stack-grid">
+        <div className="w-full h-[1px] my-12 border-t dotted-line" />
+
+        <h4 className="text-[28px] text-accent font-semibold mb-4">My Stack</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 stack-grid">
           <div className="flex items-center gap-3 stack-item rounded-xl p-3">
             <div className="stack-icon">
               <img src="/icons/framer.svg" alt="Framer" className="w-8 h-8" />
@@ -150,9 +142,8 @@ const Home = () => {
               <div className="text-sm text-gray-600">Collaboration</div>
             </div>
           </div>
-          </div>
         </div>
-      </section>
+      </div>
     </motion.main>
   )
 }

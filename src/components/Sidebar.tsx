@@ -7,7 +7,8 @@ import Instagram from './icons/Instagram'
 
 const NavItem: React.FC<{ to: string; icon: React.ReactNode; children: React.ReactNode; collapsed?: boolean }> = ({ to, icon, children, collapsed }) => {
   const loc = useLocation()
-  const active = loc.pathname === to
+  // Check if current path matches the nav item, or if we're on a sub-route (like /projects/dominos)
+  const active = loc.pathname === to || (to !== '/' && loc.pathname.startsWith(to + '/'))
 
   // build class names conditionally so we don't apply hover/bg pills when collapsed
   const base = 'sidebar-nav-item flex items-center gap-3 px-4 py-3 rounded-md transition-colors group'
@@ -24,7 +25,13 @@ const NavItem: React.FC<{ to: string; icon: React.ReactNode; children: React.Rea
       style={{ color: collapsed ? '#fff' : 'var(--text-nav)' }}
     >
       <span className="w-6 h-6 flex items-center justify-center text-[18px] opacity-90" style={{ color: 'var(--text-nav)' }}>{icon}</span>
-      <span className="text-sm nav-label" style={{ color: 'var(--text-nav)' }}>{children}</span>
+      <span className="text-sm nav-label flex items-center gap-2" style={{ color: 'var(--text-nav)' }}>
+        {children}
+        {/* If this nav item is "Projects" and path is a sub-route, show a small slug element */}
+        {active && to === '/projects' && loc.pathname !== '/projects' && (
+          <span className="project-slug">/{loc.pathname.replace('/projects/', '').split('/')[0]}</span>
+        )}
+      </span>
     </Link>
   )
 }

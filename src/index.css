@@ -8,6 +8,9 @@
   scroll-behavior: smooth;
   /* navigation sizing */
   --nav-height: 64px; /* default nav height */
+  /* UI tokens */
+  --ui-duration: 200ms;
+  --ui-ease: cubic-bezier(.2,.9,.2,1);
 }
 
 /* === Responsive header & spacing refinements === */
@@ -58,10 +61,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+    gap: 12px;
 }
 
+/* Footer visibility: keep above background and not hidden by sidebar */
+.main-content .footer-content { position: relative; z-index: 20 }
+
+/* Footer helper: use a lightweight container for footer so it doesn't inherit
+   the main-content min-height (which caused large empty scroll space). */
+.footer-main {
+  box-sizing: border-box;
+  margin-left: var(--sidebar-width, 18rem);
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  display: block;
+  width: calc(100% - var(--sidebar-width, 18rem));
+}
+
+.has-collapsed-sidebar .footer-main { margin-left: 72px !important; width: calc(100% - 72px); }
+.has-expanded-sidebar .footer-main { margin-left: 18rem !important; width: calc(100% - 18rem); }
+
 /* Keep dotted line consistent */
-.dotted-line { border-top: 2px dotted var(--border); }
+  .dotted-line { border-top: 2px dotted var(--border); }
 
 /* Slightly tighter spacing across sections for visual balance */
 .content-column { gap: 0.5rem; }
@@ -81,16 +104,17 @@
     --text: #111827;
     --text-nav: #111827;
     --accent: #8878EE;
-      --border: rgba(0,0,0,0.06);
+      --border: rgba(0,0,0,0.08);
     --muted: #6b7280;
 
-    /* Glass tokens - light mode */
-    --glass-bg: rgba(255, 255, 255, 0.28);
-    --glass-bg-light: rgba(255, 255, 255, 0.18);
-    --glass-bg-heavy: rgba(255, 255, 255, 0.50);
-    --glass-border: rgba(255, 255, 255, 0.18);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    /* Glass tokens - light mode (use subtle dark tints for outlines on white) */
+    --glass-bg: rgba(0, 0, 0, 0.04);
+    --glass-bg-light: rgba(0, 0, 0, 0.02);
+    --glass-bg-heavy: rgba(0, 0, 0, 0.06);
+    --glass-border: rgba(0, 0, 0, 0.06);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
     --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.04);
+    --glass-shadow-heavy: 0 12px 48px rgba(0, 0, 0, 0.08);
   }
 
   /* Dark theme */
@@ -112,6 +136,7 @@
     --glass-border: rgba(255, 255, 255, 0.10);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --glass-shadow-heavy: 0 12px 48px rgba(0, 0, 0, 0.6);
   }
 
   body {
@@ -210,7 +235,7 @@
     bottom: 1px; /* nudged down ~3px */
     width: 6px;
     height: 6px;
-    background: rgba(255,255,255,0.95);
+    background: var(--accent);
     border-radius: 999px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.18);
   }
@@ -233,6 +258,9 @@
   .main-content {
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: margin-left;
+    min-height: calc(100vh - var(--nav-height) - 120px); /* ensure footer sits at bottom consistently */
+    display: flex;
+    flex-direction: column;
   }
 
   /* Animate width transition */
@@ -471,33 +499,78 @@
     /* remove global body padding; main layout uses md:ml-72 instead */
   }
 
-  /* Desktop-specific tweaks for 1200px Framer frame */
+  /* Desktop: Single authoritative layout for all pages. Content sits right next 
+     to the sidebar with minimal gutter. UPDATED: Reduced spacing */
   @media (min-width: 1200px) {
-    .projects-frame {
-      max-width: 1120px; /* leave some breathing room for sidebar */
-      padding: 10px;
+    .main-content {
+      /* Reserve space for sidebar, content sits right next to it with small gutter */
+      margin-left: var(--sidebar-width, 18rem);
+      padding-left: 32px;
+      padding-right: 48px; /* More padding on right so content doesn't hug edge */
+      padding-top: 80px; /* Move content further down from toggle button */
+      box-sizing: border-box;
+      display: block;
+      z-index: 10;
+      width: calc(100vw - var(--sidebar-width, 18rem)); /* Prevent overflow */
     }
 
-    .projects-frame .grid {
-      gap: 12px;
+    .has-collapsed-sidebar .main-content { margin-left: 72px !important; }
+    .has-expanded-sidebar .main-content { margin-left: 18rem !important; }
+
+    .main-content .content-column,
+    .has-expanded-sidebar .main-content .content-column {
+      margin-left: 0 !important;
+      margin-right: auto !important;
+      padding-left: 0 !important; /* gutter handled by .main-content */
+      padding-right: 0 !important;
+      max-width: 1120px !important;
+      box-sizing: border-box !important;
+      width: 100%;
     }
 
-    .card-placeholder {
-      aspect-ratio: 5 / 4; /* slightly squarer so more fits vertically */
+    /* When sidebar is collapsed, expand content to use the extra space */
+    .has-collapsed-sidebar .main-content .content-column {
+      margin-left: 0 !important;
+      margin-right: 0 !important; /* allow the column to reach the right edge */
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      max-width: none !important; /* remove hard cap so it can fill remaining space */
+      box-sizing: border-box !important;
+      width: 100%;
     }
 
-    /* ensure expanded sidebar uses the intended width defined by component classes */
+    /* On ultra-wide screens keep a readable max-width but don't center (stay left-aligned) */
+    @media (min-width: 2000px) {
+      .has-collapsed-sidebar .main-content .content-column {
+        max-width: 1600px !important;
+        margin-right: 0 !important;
+      }
+    }
+
+    /* When collapsed, let inner frames (projects, grids) fill the available width
+       instead of staying capped and centered. This removes the visible right gap. */
+    .has-collapsed-sidebar .main-content .projects-frame,
+    .has-collapsed-sidebar .main-content .stack-grid,
+    .has-collapsed-sidebar .main-content .projects-frame .grid {
+      max-width: none !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      width: 100% !important;
+    }
+
+    /* Make sure cards can expand to use the available width when the sidebar is collapsed */
+    .has-collapsed-sidebar .main-content .projects-frame .card-placeholder,
+    .has-collapsed-sidebar .main-content .projects-frame .project-card {
+      width: 100%;
+    }
+    /* Remove the conflicting sidebar + main-content rules */
+
+    /* Sidebar styling */
     .sidebar:not(.sidebar-collapsed) {
       width: var(--sidebar-width, 18rem);
     }
 
-    /* show sidebar only at >=1200px; hide below this so tablet uses mobile nav */
-    /* default: hide sidebar for smaller viewports (mobile/tablet) */
-    .sidebar {
-      display: none;
-    }
-
-    /* At desktop sizes show the sidebar and shift main content by the sidebar width */
+    /* At desktop sizes show the sidebar */
     .sidebar {
       display: flex !important;
       position: fixed;
@@ -514,17 +587,6 @@
       width: var(--sidebar-width, 18rem);
     }
 
-    .main-content {
-      /* reserve space for the fixed sidebar using padding so inner content can be centered */
-      margin-left: 0;
-      padding-left: var(--sidebar-width, 18rem);
-      padding-right: 24px;
-      box-sizing: border-box;
-      display: flex;
-      justify-content: flex-start;
-      transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
     /* On very wide screens center the content column inside the remaining area so the right side doesn't look empty */
     @media (min-width: 1600px) {
       .main-content {
@@ -534,13 +596,20 @@
     }
   }
 
-  /* Content column that reacts to sidebar width variable */
+  /* Content column: use a predictable max-width so collapsing/expanding the sidebar
+     doesn't change the content column width. Positioning is handled by .main-content
+     which reserves space for the sidebar via padding-left. */
   .content-column {
-    /* subtract the sidebar width (fallback to 288px) and a comfortable gutter */
-    /* allow the content to expand more on very wide screens but keep a comfortable gutter */
-    max-width: min(1600px, calc(100vw - var(--sidebar-width, 288px) - 48px));
+    width: 100%;
+    max-width: 1120px; /* fixed reading width for content columns */
     box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+    padding-bottom: 0; /* Remove any extra bottom padding */
   }
+
+  /* Make stack-grid span the same visual width as content columns when used full-width */
+  .stack-grid { max-width: 1120px; margin-left: 0; margin-right: 0; }
 
   /* smaller break for tighter spaces: reduce gaps if the available width is narrow */
   @media (max-width: 1280px) {
@@ -558,6 +627,9 @@
     width: 100%;
     box-sizing: border-box;
     background: transparent;
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* Default grid: fluid, wrap when needed, maintain minimum card width to avoid clipping */
@@ -579,9 +651,10 @@
 
   /* Desktop: ensure three columns as long as the viewport allows it */
   @media (min-width: 1200px) {
-    .content-column { max-width: 1900px; }
-    .main-content { padding-left: calc(var(--sidebar-width, 18rem) + 24px); padding-right: 24px; }
-    .projects-frame .grid { grid-template-columns: repeat(3, minmax(500px, 1fr)); gap: 44px; }
+  /* keep consistent max width with other pages */
+  .content-column { max-width: 1120px; }
+    .main-content { margin-left: var(--sidebar-width, 18rem); padding-left: 24px; padding-right: 24px; }
+    .projects-frame .grid { grid-template-columns: repeat(3, minmax(310px, 1fr)); gap: 24px; }
     .projects-frame .card-placeholder { aspect-ratio: 5 / 4; }
     
     /* Ensure stack grid has proper spacing */
@@ -615,6 +688,35 @@
     height: 56px; /* matches the visual header height */
     display: flex;
     align-items: center;
+  }
+
+  /* project slug shown next to the Projects nav item when on a project detail */
+  .project-slug {
+    display: inline-block;
+    max-width: 10rem; /* limit width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--glass-bg-light);
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    transform-origin: left center;
+    animation: slug-in 360ms cubic-bezier(.2,.9,.2,1);
+  }
+
+/* Light mode specific tweaks: make project slug readable on white */
+:root:not(.dark) .project-slug {
+  background: color-mix(in srgb, var(--nav-bg) 92%, rgba(0,0,0,0.06) 8%);
+  border: 1px solid rgba(0,0,0,0.06);
+  color: #374151; /* slightly darker muted for readability */
+}
+
+  @keyframes slug-in {
+    from { opacity: 0; transform: translateX(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
   }
 
   /* Glass UI utility classes */
@@ -693,15 +795,49 @@
     z-index: 1200;
   }
 
+  /* Reusable page padding utility: keeps top and bottom spacing consistent
+    across all pages. Use this on the page <main> element instead of ad-hoc
+    per-breakpoint pt/pb classes so every page mirrors vertical spacing. */
+  .page-pad {
+    padding-top: 0; /* Top padding now handled by .main-content */
+    padding-bottom: 28px; /* Reduced bottom padding for tighter footer spacing */
+  }
+
   /* Light mode: add subtle border at top for definition */
   :root:not(.dark) .mobile-menu {
-    background: color-mix(in srgb, var(--nav-bg) 96%, rgba(0,0,0,0.01) 4%);
-    border-top: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 -2px 12px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    background: color-mix(in srgb, var(--nav-bg) 96%, rgba(0,0,0,0.02) 4%);
+    border-top: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
   }
 
   .mobile-menu.open {
     display: block;
+  }
+
+  /* animate mobile menu open/close with subtle slide */
+  .mobile-menu {
+    transition: opacity 220ms ease, transform 220ms cubic-bezier(.2,.9,.2,1);
+  }
+  .mobile-menu.closed {
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    display: none; /* fallback when JS toggles */
+  }
+  .mobile-menu.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    display: block;
+  }
+
+  /* Box the mobile menu contents so it appears as a panel instead of fully transparent */
+  .mobile-menu-inner {
+    background: var(--mobile-nav-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: var(--glass-shadow-sm);
+    border: 1px solid var(--glass-border);
   }
   
   .mobile-menu-inner {
@@ -737,6 +873,12 @@
     border-left-color: var(--accent);
     color: var(--accent);
     font-weight: 600;
+  }
+
+  /* ensure project-slug looks right in mobile menu */
+  .mobile-menu .project-slug {
+    font-size: 12px;
+    max-width: none; /* allow full slug at larger breakpoints */
   }
 
   /* Light mode: add subtle borders and refined backgrounds to menu items */
@@ -778,103 +920,6 @@
     }
   }
 
-  @media (min-width: 1200px) {
-    /* Respect the sidebar width variable so the centered content sits in the remaining area
-       to the right of the fixed sidebar. This keeps the visual center correct for both
-       collapsed and expanded states without visually clipping to the right. */
-    .main-content {
-      /* Reserve space for the sidebar and center the inner content using flexbox */
-      margin-left: var(--sidebar-width, 18rem);
-      padding-left: 0;
-      padding-right: 0;
-      box-sizing: border-box;
-      z-index: 10; /* ensure sidebar (z-index:40) sits above main */
-      display: flex;
-      justify-content: center;
-      width: calc(100vw - var(--sidebar-width, 18rem));
-    }
-
-    /* Centered column that is bounded by available space so it never overflows. */
-    .content-column {
-      margin-left: auto;
-      margin-right: auto;
-      padding-left: 24px;
-      padding-right: 24px;
-      max-width: 1900px;
-      width: 100%;
-      box-sizing: border-box;
-      min-width: 0;
-    }
-
-    /* Desktop grid: enforce three flexible columns (min 500px). This keeps 3-up at 1920x1080
-       while allowing the cards to shrink if space is tight to avoid overflow. */
-    .projects-frame .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(500px, 1fr));
-      gap: 44px;
-      justify-items: stretch;
-      justify-content: start;
-    }
-
-    /* allow grid children to shrink and not cause overflow */
-    .projects-frame .grid > * {
-      min-width: 0;
-    }
-
-    /* (expanded-sidebar narrowing moved to tablet scope below) */
-
-    /* When the sidebar is collapsed allow a wider max-width but still bounded by viewport. */
-    .has-collapsed-sidebar .content-column {
-      max-width: min(1240px, calc(100vw - var(--sidebar-width, 18rem) - 48px));
-    }
-
-    /* When the sidebar is collapsed, keep a 3-column projects layout and scale cards
-       so they stay on a single row of three rather than expanding into extra whitespace. */
-    .has-collapsed-sidebar .projects-frame .grid {
-      /* keep 3 columns and allow them to shrink smoothly, but prevent items from forcing overflow */
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 28px;
-    }
-
-    /* allow grid children to shrink and not cause overflow */
-    .projects-frame .grid > * {
-      min-width: 0;
-    }
-
-    /* Desktop: use flexible card sizing within the 1400px content-column */
-    @media (min-width: 1200px) {
-      .projects-frame {
-        overflow: visible;
-        box-sizing: border-box;
-        max-width: 100%; /* allow the frame to expand with content-column */
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .projects-frame .grid {
-        display: grid;
-        grid-auto-rows: auto;
-        grid-template-columns: repeat(3, minmax(310px, 1fr));
-        justify-content: center;
-        gap: 28px;
-      }
-
-      .projects-frame .card-placeholder {
-        width: 100%;
-        aspect-ratio: 5 / 4; /* maintain aspect ratio */
-        border-radius: 12px;
-      }
-    }
-
-   /* keep desktop (>=1200px) showing 3 fixed columns; expanded-sidebar rules for
-     narrower viewport ranges are applied in the tablet media block below. */
-
-    /* Prevent projects grid items from overflowing when sidebar collapses */
-    .projects-frame .grid > * {
-      min-width: 0; /* allows flex/grid items to shrink properly */
-    }
-  }
-
   /* Small screens: make sure the content has comfortable side padding */
   @media (max-width: 1199px) {
     .content-column {
@@ -904,6 +949,10 @@
       font-size: 2rem;
     }
   }
+
+  /* Note: previous aggressive rule for .has-expanded-sidebar removed to avoid
+     shifting all pages too far right. We keep a small gutter tweak earlier so
+     About doesn't sit flush against the sidebar when expanded. */
 
   /* Ensure mobile nav and sidebar behavior is explicit for tablet/phone sizes */
   @media (max-width: 1199px) {
@@ -941,3 +990,163 @@
       margin-left: 0 !important;
     }
   }
+
+  /* Note: main-content centering override removed so the layout will respond
+     to --sidebar-width. We keep the .content-column gutter tweak for expanded
+     sidebar only (below). */
+
+  /* When the sidebar is expanded, give the main content column a slightly
+     larger left gutter at desktop sizes so all pages match the About layout. */
+  @media (min-width: 1200px) {
+    /* Removed per-page inner gutter override to keep consistent alignment
+       driven by .main-content and --sidebar-width for all pages. */
+   /* Do not override .main-content here; we only adjust the inner column's gutter.
+     This preserves consistent main alignment across pages when the sidebar
+     toggles between collapsed and expanded. */
+  }
+
+
+/* ==========================
+   Preloader styles
+   ========================== */
+.preloader-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));
+  z-index: 2000;
+  pointer-events: auto;
+}
+
+.preloader-skip {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  backdrop-filter: blur(6px) saturate(120%);
+  cursor: pointer;
+}
+
+.preloader-orb {
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: var(--orb-x, 50vw);
+  top: var(--orb-y, 50vh);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 220ms ease, opacity 300ms ease;
+}
+
+.orb-core {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.08) 28%, transparent 60%), linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, white 30%), color-mix(in srgb, var(--accent) 40%, black 60%));
+  box-shadow: 0 12px 40px rgba(136,120,238,0.16), 0 2px 8px rgba(0,0,0,0.12);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.orb-glow {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  filter: blur(18px);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 60%, transparent) 0%, transparent 60%);
+  opacity: 0.85;
+}
+
+.orb-ripple {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  border: 1px solid rgba(136,120,238,0.08);
+  animation: orb-breathe 2400ms ease-in-out infinite;
+  opacity: 0.9;
+}
+
+@keyframes orb-breathe {
+  0% { transform: scale(0.96); opacity: 0.9 }
+  50% { transform: scale(1.06); opacity: 0.95 }
+  100% { transform: scale(0.96); opacity: 0.9 }
+}
+
+.preloader-overlay.burst .preloader-orb {
+  animation: orb-explode 650ms cubic-bezier(.2,.9,.2,1) forwards;
+}
+
+@keyframes orb-explode {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1 }
+  60% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.95 }
+  100% { transform: translate(-50%, -50%) scale(18); opacity: 0 }
+}
+
+/* Fade out overlay when hidden */
+.preloader-overlay[hidden] { display: none }
+
+/* Reduced-motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .preloader-orb, .orb-ripple, .orb-glow { animation: none !important; transition: none !important }
+  .preloader-overlay { transition: opacity 200ms linear; }
+}
+
+/* Logo preloader styles */
+.logo-preloader {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+  background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 80%, var(--accent) 20%));
+  color: white;
+  z-index: 2200;
+}
+
+.logo-svg {
+  width: min(56vw, 520px);
+  height: auto;
+}
+
+.logo-svg-wrap {
+  display: inline-block;
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease;
+}
+
+/* stroke is drawn by JS; fill animates on hover/keyboard activation */
+.logo-svg path { fill-opacity: 0; transition: none; }
+.logo-svg path[style] { stroke: var(--accent); }
+
+/* When running, animate forward/back by toggling stroke-dashoffset in JS (no CSS keyframes needed) */
+.logo-svg-wrap.running { transform: none }
+
+.logo-preloader-caption { display: none }
+
+/* exit animation: scale up and fade out to reveal page */
+.logo-preloader.exiting { opacity: 0; transform: scale(1.04); transition: opacity 420ms ease, transform 420ms ease; pointer-events: none }
+.logo-preloader { transition: opacity 420ms ease, transform 420ms ease }
+
+.logo-preloader .logo-preloader-caption {
+  color: color-mix(in srgb, white 88%, transparent 12%);
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-svg path { transition: none !important; stroke-dashoffset: 0 !important }
+}
+

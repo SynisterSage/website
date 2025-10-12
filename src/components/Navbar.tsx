@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Menu, X, Moon, Sun, Home as HomeIcon, FolderOpen, Mail as MailIcon, User, Briefcase } from 'lucide-react'
 import { ThemeContext } from '../context/ThemeProvider'
@@ -13,6 +13,10 @@ const Navbar = () => {
   }
 
   const { theme, toggle } = useContext(ThemeContext)
+  const loc = useLocation()
+
+  // derived slug for mobile display when on a project detail route
+  const projectSlug = loc.pathname.startsWith('/projects/') && loc.pathname !== '/projects' ? '/' + loc.pathname.replace('/projects/', '').split('/')[0] : ''
 
   return (
     <nav className="fixed w-full z-60 px-6 py-3 mobile-nav glass" style={{ color: 'var(--mobile-text)' }}>
@@ -57,23 +61,23 @@ const Navbar = () => {
         style={{ color: 'var(--mobile-text)', zIndex: 110 }}
       >
         <div className="mobile-menu-inner">
-          <NavLink to="/" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
+          <NavLink onClick={() => setIsOpen(false)} to="/" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
             <span className="w-6 h-6 flex items-center justify-center"><HomeIcon size={18} /></span>
             <span>Home</span>
           </NavLink>
-          <NavLink to="/projects" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
+          <NavLink onClick={() => setIsOpen(false)} to="/projects" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
             <span className="w-6 h-6 flex items-center justify-center"><FolderOpen size={18} /></span>
-            <span>Projects</span>
+            <span className="flex items-center gap-2">Projects{projectSlug && <span className="project-slug">{projectSlug}</span>}</span>
           </NavLink>
-          <NavLink to="/about" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
+          <NavLink onClick={() => setIsOpen(false)} to="/about" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
             <span className="w-6 h-6 flex items-center justify-center"><User size={18} /></span>
             <span>About</span>
           </NavLink>
-          <NavLink to="/services" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
+          <NavLink onClick={() => setIsOpen(false)} to="/services" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
             <span className="w-6 h-6 flex items-center justify-center"><Briefcase size={18} /></span>
             <span>Services</span>
           </NavLink>
-          <NavLink to="/contact" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
+          <NavLink onClick={() => setIsOpen(false)} to="/contact" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
             <span className="w-6 h-6 flex items-center justify-center"><MailIcon size={18} /></span>
             <span>Contact</span>
           </NavLink>
