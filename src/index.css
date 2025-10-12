@@ -1,0 +1,558 @@
+@import './fonts.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  :root {
+}
+    scroll-behavior: smooth;
+  }
+
+  /* navigation sizing */
+  :root {
+    --nav-height: 64px; /* default nav height */
+  }
+
+  /* allow horizontal scrolling when necessary (user can optionally scroll left/right) */
+  html, body, #root {
+    overflow-x: auto;
+  }
+
+  /* Light theme */
+  :root {
+    --bg: #ffffff;
+      --nav-bg: #ffffff; /* sidebar/nav should be light in light mode so text is visible */
+    --mobile-nav-bg: #ffffff;
+    --mobile-text: #111827;
+    --text: #111827;
+    --text-nav: #111827;
+    --accent: #8878EE;
+      --border: rgba(0,0,0,0.06);
+    --muted: #6b7280;
+
+    /* Glass tokens - light mode */
+    --glass-bg: rgba(255, 255, 255, 0.28);
+    --glass-bg-light: rgba(255, 255, 255, 0.18);
+    --glass-bg-heavy: rgba(255, 255, 255, 0.50);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Dark theme */
+  :root.dark {
+    --bg: #121217; /* actual dark background per user */
+    --nav-bg: #121217;
+    --mobile-nav-bg: #121217;
+    --mobile-text: #ffffff;
+    --text: #e5e7eb;
+    --text-nav: #ffffff;
+    --accent: #8878EE;
+    --border: #2D2D3B;
+    --muted: #9ca3af;
+
+    /* Glass tokens - dark mode */
+    --glass-bg: rgba(30, 30, 36, 0.72);
+    --glass-bg-light: rgba(40, 40, 46, 0.60);
+    --glass-bg-heavy: rgba(25, 25, 30, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  body {
+    background: linear-gradient(135deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 92%, var(--accent) 8%) 100%);
+    background-attachment: fixed;
+    color: var(--text);
+  }
+
+  #root {
+    background-color: transparent;
+  }
+
+  /* helper components */
+  .card-placeholder {
+    background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, white) 100%);
+  }
+
+  /* nav item active indicator and hover animation */
+  .sidebar-nav-item {
+    position: relative;
+    transform: translateZ(0);
+  }
+
+  .sidebar-nav-item:hover { transform: translateX(4px); }
+
+  .sidebar-nav-item::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    transition: width 150ms ease;
+  }
+
+  .sidebar-nav-item.active::before {
+    width: 4px;
+    height: 48%;
+    background: var(--accent);
+  }
+
+  /* Collapsed sidebar styles */
+  .sidebar-collapsed {
+    width: 72px !important;
+  }
+
+  .sidebar-collapsed .nav-label,
+  .sidebar-collapsed .sidebar-subtitle {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+  }
+
+  .sidebar-collapsed .sidebar-nav-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem 0.5rem;
+    width: calc(100% - 1rem);
+    margin: 0.25rem auto;
+    box-sizing: border-box;
+  }
+
+  .sidebar-collapsed .sidebar-nav-item span:first-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .sidebar-collapsed .nav-label {
+    display: none;
+  }
+
+  /* Hover should be subtle (no pill) in collapsed mode; active keeps a thicker pill */
+  /* In collapsed mode: keep hover animation (slide slightly) but no pill; active shows a small dot below the icon */
+  .sidebar-collapsed .sidebar-nav-item:hover {
+    background: rgba(255,255,255,0.02) !important;
+    transform: translateX(6px) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Remove pill for active; add a small dot under active icon to indicate selection */
+  .sidebar-collapsed .sidebar-nav-item.active {
+    background: transparent !important;
+    transform: none !important;
+  }
+
+  .sidebar-collapsed .sidebar-nav-item.active::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 1px; /* nudged down ~3px */
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  }
+
+  .sidebar-collapsed .sidebar-nav-item::before {
+    display: none;
+  }
+
+  .sidebar-collapsed .social-icons {
+    justify-content: center;
+    padding-top: 0.5rem;
+  }
+
+  .sidebar-collapsed .social-separator {
+    margin: 0 0.5rem;
+    opacity: 0.2;
+  }
+
+  /* Main content transition */
+  .main-content {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: margin-left;
+  }
+
+  /* Animate width transition */
+  .sidebar {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: width;
+  }
+
+  .dotted-line {
+    border-top: 1px dashed var(--border);
+  }
+
+  /* tighter default spacing helpers */
+  :root {
+    --site-gap: 1rem; /* general smaller gap */
+    --card-padding: 0.75rem;
+  }
+
+  
+
+  .available-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #0f2f1f;
+    color: #c6f6d5;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  /* per-card outline appearance (simplified) */
+
+  /* project badge updated to use glass styling (softer, semi-transparent) */
+  .project-badge {
+    background: rgba(0,0,0,0.5); /* semi-transparent dark tint */
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  @supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
+    .project-badge {
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px) saturate(120%);
+      -webkit-backdrop-filter: blur(6px) saturate(120%);
+    }
+  }
+
+  .card-placeholder {
+    border-radius: 8px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 70%, white 30%) 0%, color-mix(in srgb, var(--accent) 40%, #000 60%) 100%);
+    aspect-ratio: 4 / 3;
+    background-size: cover;
+  }
+
+  /* unified project card surface */
+  .project-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    border: none; /* no per-card border */
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  }
+
+  /* stack icon - soft inset tile */
+  .stack-icon {
+    border-radius: 8px;
+    padding: 8px;
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent; /* icon sits on the card surface */
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Micro-interactions */
+  .btn-outline-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.625rem 1.5rem; /* 10px 24px */
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: transparent;
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, transform 200ms ease;
+  }
+
+  .btn-outline-accent:hover {
+    background: linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 90%, #ffffff 10%));
+    color: white;
+    border-color: transparent;
+    transform: translateY(-1px);
+  }
+
+  .project-card-hover {
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    will-change: transform;
+  }
+
+  .project-card-hover:hover {
+    transform: translateY(-2px) scale(1.005);
+    box-shadow: 0 8px 26px rgba(0,0,0,0.12);
+  }
+
+  /* single frame border around the projects grid */
+  .projects-frame {
+    padding: 8px 8px 12px 8px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--border) 70%, rgba(0,0,0,0.02));
+    box-shadow: 0 6px 14px rgba(0,0,0,0.10);
+    background: transparent;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .stack-item {
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .stack-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  @media (min-width: 768px) {
+    /* remove global body padding; main layout uses md:ml-72 instead */
+  }
+
+  /* Desktop-specific tweaks for 1200px Framer frame */
+  @media (min-width: 1200px) {
+    .projects-frame {
+      max-width: 1120px; /* leave some breathing room for sidebar */
+      padding: 10px;
+    }
+
+    .projects-frame .grid {
+      gap: 12px;
+    }
+
+    .card-placeholder {
+      aspect-ratio: 5 / 4; /* slightly squarer so more fits vertically */
+    }
+
+    /* ensure expanded sidebar uses the intended width defined by component classes */
+    .sidebar:not(.sidebar-collapsed) {
+      width: var(--sidebar-width, 18rem);
+    }
+
+    /* show sidebar only at >=1200px; hide below this so tablet uses mobile nav */
+    /* default: hide sidebar for smaller viewports (mobile/tablet) */
+    .sidebar {
+      display: none;
+    }
+
+    /* At desktop sizes show the sidebar and shift main content by the sidebar width */
+    @media (min-width: 1200px) {
+      .sidebar {
+        display: flex !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: space-between;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        z-index: 40;
+        width: var(--sidebar-width, 18rem);
+      }
+
+      .main-content {
+        /* reserve space for the fixed sidebar using padding so inner content can be centered */
+        margin-left: 0;
+        padding-left: var(--sidebar-width, 18rem);
+        padding-right: 24px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: flex-start;
+        transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* On very wide screens center the content column inside the remaining area so the right side doesn't look empty */
+      @media (min-width: 1600px) {
+        .main-content {
+          justify-content: center;
+          padding-right: 0;
+        }
+      }
+    }
+  }
+
+  /* Content column that reacts to sidebar width variable */
+  .content-column {
+    /* subtract the sidebar width (fallback to 288px) and a comfortable gutter */
+    /* allow the content to expand more on very wide screens but keep a comfortable gutter */
+    max-width: min(1600px, calc(100vw - var(--sidebar-width, 288px) - 48px));
+    box-sizing: border-box;
+  }
+
+  /* smaller break for tighter spaces: reduce gaps if the available width is narrow */
+  @media (max-width: 1280px) {
+    .projects-frame .grid {
+      gap: 10px;
+    }
+    .stack-grid {
+      gap: 10px;
+    }
+  }
+
+  /* Responsive projects grid using auto-fit so cards wrap instead of overflow */
+  .projects-frame {
+    padding: 24px;
+  }
+
+  .projects-frame .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  /* Force 3 columns on desktop so cards show as 3-in-a-row */
+  @media (min-width: 1200px) {
+    .projects-frame .grid {
+      grid-template-columns: repeat(3, minmax(340px, 1fr));
+      gap: 24px;
+    }
+  }
+
+  .projects-frame .card-placeholder {
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+  }
+
+  /* For very narrow screens make cards slightly taller so content fits comfortably */
+  @media (max-width: 480px) {
+    .projects-frame .grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .projects-frame .card-placeholder {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  /* Sidebar header fixed height to keep collapsed/expanded alignment consistent */
+  .sidebar-header {
+    height: 56px; /* matches the visual header height */
+    display: flex;
+    align-items: center;
+  }
+
+  /* Glass UI utility classes */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  @supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+    .glass {
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+    }
+    
+    .glass-light {
+      background: var(--glass-bg-light);
+      backdrop-filter: blur(10px) saturate(130%);
+      -webkit-backdrop-filter: blur(10px) saturate(130%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow-sm);
+    }
+    
+    .glass-heavy {
+      background: var(--glass-bg-heavy);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+  }
+
+  /* Accessibility: reduced transparency */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass,
+    .glass-light,
+    .glass-heavy {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: var(--nav-bg) !important;
+      border: 1px solid var(--border) !important;
+    }
+  }
+
+  /* Glass hover effects */
+  /* mobile nav hidden by default; enabled at <=1199px */
+  .mobile-nav {
+    display: none;
+    top: 0;
+    left: 0;
+    right: 0;
+    position: fixed;
+    z-index: 999;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    align-items: center;
+    height: var(--nav-height);
+    backdrop-filter: blur(6px) saturate(120%);
+  }
+
+  .mobile-menu {
+    position: fixed;
+    top: var(--nav-height); /* below the nav */
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    padding: 12px;
+    display: none;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    z-index: 990;
+  }
+
+  .mobile-menu.open {
+    display: block;
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+  }
+
+  .mobile-menu-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .mobile-menu-link {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+
+  /* Hide desktop sidebar and use mobile nav for widths below 1200px */
+  @media (max-width: 1199px) {
+    .mobile-nav {
+      display: flex !important;
+    }
+
+    .mobile-menu {
+      display: none; /* will show when .open is added */
+    }
+
+    .mobile-menu.open {
+      display: block;
+    }
+
+    .sidebar {
+      display: none !important;
+    }
+
+    .main-content {
+      margin-left: 0 !important;
+      padding-top: calc(var(--nav-height) + 8px); /* ensure content isn't hidden under nav */
+    }
+  }
