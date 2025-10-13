@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import TiltCard from '../components/TiltCard'
 
 type WorkItem = {
   id: string
@@ -76,11 +77,7 @@ const About = () => {
       className="min-h-screen page-pad"
     >
   <div className="content-column about-page mb-6">
-        <div className="mb-6">
-          <span className="available-pill">
-            <span className="w-2 h-2 bg-green-400 rounded-full" /> Available for Work
-          </span>
-        </div>
+        {/* Available pill intentionally hidden on About page */}
 
         <h1 className="text-5xl font-semibold text-accent mb-4">About</h1>
         <h2 className="text-xl text-gray-600 mb-6">Hello — I’m Alexander (A.F.)</h2>
@@ -92,21 +89,27 @@ const About = () => {
           websites, apps, and brand systems for clients and personal projects since 2016.
         </p>
 
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-          <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)]">
-            <h3 className="text-sm text-[var(--muted)] mb-2">Based In</h3>
-            <div className="text-lg font-semibold">Wayne, New Jersey</div>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+          <TiltCard>
+            <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] h-full">
+              <h3 className="text-sm text-[var(--muted)] mb-2">Based In</h3>
+              <div className="text-lg font-semibold">Wayne, New Jersey</div>
+            </div>
+          </TiltCard>
 
-          <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)]">
-            <h3 className="text-sm text-[var(--muted)] mb-2">Years</h3>
-            <div className="text-lg font-semibold">8</div>
-          </div>
+          <TiltCard>
+            <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] h-full">
+              <h3 className="text-sm text-[var(--muted)] mb-2">Years</h3>
+              <div className="text-lg font-semibold">8</div>
+            </div>
+          </TiltCard>
 
-          <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)]">
-            <h3 className="text-sm text-[var(--muted)] mb-2">Projects</h3>
-            <div className="text-lg font-semibold">20+</div>
-          </div>
+          <TiltCard>
+            <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] h-full">
+              <h3 className="text-sm text-[var(--muted)] mb-2">Projects</h3>
+              <div className="text-lg font-semibold">20+</div>
+            </div>
+          </TiltCard>
         </div>
 
   <div className="w-full h-[1px] my-6 border-t dotted-line" />
@@ -118,8 +121,8 @@ const About = () => {
             {WORK.map((w) => {
               const isOpen = openId === w.id
               return (
-                <div key={w.id} className="rounded-2xl overflow-hidden">
-                  <div className="bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)]">
+                <TiltCard key={w.id} className="overflow-hidden">
+                  <div className="rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)]">
                     <button
                       type="button"
                       className="w-full text-left p-6 flex items-start justify-between gap-6"
@@ -171,7 +174,7 @@ const About = () => {
                       )}
                     </AnimatePresence>
                   </div>
-                </div>
+                </TiltCard>
               )
             })}
           </div>

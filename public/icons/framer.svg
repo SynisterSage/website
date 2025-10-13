@@ -1,6 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M10.6667 16H21.3333V26.6667H10.6667V16Z" fill="#8878EE"/>
-  <path d="M10.6667 5.33333H21.3333L10.6667 16V5.33333Z" fill="#8878EE"/>
-  <path d="M21.3333 5.33333H10.6667V16H21.3333V5.33333Z" fill="#8878EE"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none"><path fill="#fff" stroke="#121212" stroke-width=".1" d="M18.258 12.99 8.437 3.167h19.671v9.821h-9.85z"/><path fill="url(#a)" stroke="#121212" stroke-width=".1" d="M8.27 13.182h9.947l9.916 9.917H8.271v-9.917z"/><path fill="url(#b)" stroke="#121212" stroke-width=".1" d="m18.187 33.045-9.846-9.846h9.846v9.846z"/><defs><linearGradient id="a" x1="18.188" x2="18.212" y1="13.132" y2="23.149" gradientUnits="userSpaceOnUse"><stop stop-color="#0AF"/><stop offset="1" stop-color="#09F"/></linearGradient><linearGradient id="b" x1="13.204" x2="13.254" y1="23.149" y2="33.166" gradientUnits="userSpaceOnUse"><stop stop-color="#03F"/><stop offset="1" stop-color="#05F"/></linearGradient></defs></svg>

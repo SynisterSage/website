@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import TiltCard from '../components/TiltCard'
 
 type Service = {
   id: string
@@ -92,8 +93,10 @@ const FAQS: FAQ[] = [
 
 const Services = () => {
   const [openId, setOpenId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const toggle = (id: string) => setOpenId((cur) => (cur === id ? null : id))
+  const toggleExpand = (id: string) => setExpandedId((cur) => (cur === id ? null : id))
 
   return (
     <motion.main
@@ -103,11 +106,7 @@ const Services = () => {
       className="min-h-screen page-pad"
     >
   <div className="content-column services-page mb-6">
-        <div className="mb-6">
-          <span className="available-pill">
-            <span className="w-2 h-2 bg-green-400 rounded-full" /> Available for Work
-          </span>
-        </div>
+        {/* Available pill intentionally hidden on Services page */}
 
         <h1 className="text-5xl font-semibold text-accent mb-4">My Services</h1>
         <h2 className="text-xl text-gray-600 mb-6">Curated offerings to bring your vision to life</h2>
@@ -121,21 +120,41 @@ const Services = () => {
 
   <section className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {SERVICES.map((service) => (
-              <div
-                key={service.id}
-                className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] hover:border-[var(--accent)] transition-colors"
-              >
-                <h3 className="text-2xl font-semibold text-accent mb-3">{service.title}</h3>
-                <p className="text-[var(--text)] mb-4 leading-relaxed">{service.description}</p>
-                <div className="flex items-center justify-between mt-6">
-                  <span className="text-sm font-medium text-[var(--muted)]">{service.price}</span>
-                  <Link to="/contact" className="btn-primary">
-                    {service.cta}
-                  </Link>
-                </div>
-              </div>
-            ))}
+            {SERVICES.map((service) => {
+              const isExpanded = expandedId === service.id
+              return (
+                <TiltCard key={service.id}>
+                  <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] hover:border-[var(--accent)] transition-colors h-full flex flex-col">
+                    <div>
+                      <h3 className="text-2xl font-semibold text-accent mb-3">{service.title}</h3>
+                    </div>
+
+                    <div className="flex-1">
+                      <p className={`text-[var(--text)] mb-4 leading-relaxed service-desc ${isExpanded ? 'expanded' : 'clamped'}`}>
+                        {service.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-6">
+                      <span className="text-sm font-medium text-[var(--muted)]">{service.price}</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          className="text-sm text-[var(--muted)] underline-offset-2 hover:underline"
+                          onClick={() => toggleExpand(service.id)}
+                        >
+                          {isExpanded ? 'Show less' : 'Read more'}
+                        </button>
+
+                        <Link to="/contact" className="btn-primary">
+                          {service.cta}
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </TiltCard>
+              )
+            })}
           </div>
         </section>
 

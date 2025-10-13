@@ -83,6 +83,20 @@
 .has-collapsed-sidebar .footer-main { margin-left: 72px !important; width: calc(100% - 72px); }
 .has-expanded-sidebar .footer-main { margin-left: 18rem !important; width: calc(100% - 18rem); }
 
+/* Mobile: sidebar is hidden, make footer full-width and use standard page padding */
+@media (max-width: 1199px) {
+  .footer-main,
+  .has-collapsed-sidebar .footer-main,
+  .has-expanded-sidebar .footer-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  /* align footer-content better on narrow screens */
+  .footer-content { flex-direction: column; gap: 6px; align-items: flex-start; }
+}
+
 /* Keep dotted line consistent */
   .dotted-line { border-top: 2px dotted var(--border); }
 
@@ -261,6 +275,71 @@
     min-height: calc(100vh - var(--nav-height) - 120px); /* ensure footer sits at bottom consistently */
     display: flex;
     flex-direction: column;
+    position: relative; /* create stacking context for grid pseudo-element */
+  }
+
+  /* Subtle grid overlay behind page content (not on the sidebar). Uses a fixed pseudo element so it doesn't scroll separately. */
+  :root {
+    /* RGB color for grid (purple) */
+    --grid-rgb: 136, 120, 238; /* #8878EE */
+    --grid-opacity: 0.035; /* very subtle */
+    --grid-size: 48px; /* spacing between lines */
+  }
+
+  .main-content::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width, 18rem);
+    width: calc(100% - var(--sidebar-width, 18rem));
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0; /* behind content */
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        rgba(var(--grid-rgb), var(--grid-opacity)) 0,
+        rgba(var(--grid-rgb), var(--grid-opacity)) 1px,
+        transparent 1px,
+        transparent var(--grid-size)
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(var(--grid-rgb), var(--grid-opacity)) 0,
+        rgba(var(--grid-rgb), var(--grid-opacity)) 1px,
+        transparent 1px,
+        transparent var(--grid-size)
+      );
+    background-repeat: repeat;
+    mix-blend-mode: overlay;
+    opacity: 1;
+  }
+
+  /* Ensure page content sits above the grid overlay */
+  .main-content > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* When sidebar is collapsed (small width), adjust the overlay left offset */
+  .has-collapsed-sidebar .main-content::before {
+    left: 72px;
+    width: calc(100% - 72px);
+  }
+
+  /* Mobile: sidebar hidden — overlay should cover full width */
+  @media (max-width: 1199px) {
+    .main-content::before {
+      left: 0;
+      width: 100%;
+    }
+  }
+
+  /* Respect reduced motion: disable mix-blend tricks if user prefers reduced motion or low-power */
+  @media (prefers-reduced-motion: reduce) {
+    .main-content::before {
+      mix-blend-mode: normal;
+    }
   }
 
   /* Animate width transition */
@@ -332,6 +411,37 @@
     background-size: cover;
   }
 
+  /* Glassy hover effect for project cards */
+  .project-glass-hover {
+    will-change: transform, box-shadow, backdrop-filter;
+    transition: transform var(--ui-duration) var(--ui-ease), box-shadow var(--ui-duration) var(--ui-ease), border-color var(--ui-duration) var(--ui-ease), backdrop-filter var(--ui-duration) var(--ui-ease);
+  }
+
+  .project-glass-hover:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--glass-shadow-heavy);
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--glass-border));
+  }
+
+  /* subtle sheen across the card on hover (fast purple shimmer) */
+  /* shimmer removed per request; keep no pseudo-element here */
+
+  /* Tilt variables and base */
+  .project-glass-hover {
+    --tx: 0deg;
+    --ty: 0deg;
+    --ax: 0%;
+    transform-origin: center;
+    transition: transform 220ms var(--ui-ease), box-shadow 220ms var(--ui-ease);
+  }
+
+  .project-glass-hover {
+    position: relative;
+    overflow: visible;
+  }
+
+  /* (outline removed per request) */
+
   /* unified project card surface */
   .project-card {
     border-radius: 12px;
@@ -340,6 +450,85 @@
     border: none; /* no per-card border */
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
   }
+
+  /* Title shift on hover driven by --sx/--sy set by JS */
+  .project-glass-hover .absolute p,
+  .project-glass-hover .absolute h3 {
+    transition: transform 220ms var(--ui-ease);
+  }
+
+  .project-glass-hover .absolute h3 {
+    transform: translate(var(--sx, 0), var(--sy, 0));
+  }
+
+  /* Brand micro-animation for the A.F. link */
+  .brand-link {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: transform 160ms var(--ui-ease), box-shadow 160ms var(--ui-ease), color 160ms var(--ui-ease);
+    will-change: transform;
+  }
+
+  .brand-link:focus {
+    outline: 3px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    outline-offset: 4px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  }
+
+  .brand-link:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+  }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .brand-link,
+    .brand-link:focus,
+    .brand-link:hover {
+      transition: none !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  /* Service description clamp + expand */
+  .service-desc.clamped {
+    display: -webkit-box;
+    display: box;
+    -webkit-line-clamp: 4; /* show 4 lines */
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .service-desc.expanded {
+    max-height: none;
+  }
+
+  /* Ensure action row stays aligned at the bottom by making card a column flex container (handled in JSX) */
+
+  /* Project metadata block spacing: vertically center and ensure consistent gap */
+  .project-meta {
+    align-items: center; /* vertically center grid cells */
+  }
+
+  .project-meta > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .project-meta h3 {
+    margin-bottom: 0.25rem;
+  }
+
+  .project-meta p {
+    margin: 0;
+  }
+
+/* custom cursor removed */
 
   /* stack icon - soft inset tile */
   .stack-icon {
@@ -383,6 +572,41 @@
   .btn-primary:active {
     transform: translateY(0);
   }
+
+/* === Sidebar-collapsed fixes: ensure content fills remaining width === */
+.has-collapsed-sidebar .main-content {
+  margin-left: 72px !important;
+  width: calc(100vw - 72px) !important;
+}
+
+.has-collapsed-sidebar .main-content .content-column,
+.has-collapsed-sidebar .main-content .projects-frame {
+  max-width: none !important;
+  width: 100% !important;
+  margin-right: 0 !important;
+}
+
+/* make sure footer also respects the top-level var if present */
+.has-collapsed-sidebar .footer-main { margin-left: 72px !important; width: calc(100% - 72px) !important; }
+
+/* Ensure footer inner column fills available width when sidebar collapsed so
+   the right-side item lines up correctly with the page edge. */
+.has-collapsed-sidebar .footer-main .content-column,
+.has-collapsed-sidebar .footer-main .footer-content {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.has-collapsed-sidebar .footer-main .footer-content {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
 
   /* Secondary Button - Outline style */
   .btn-secondary {
@@ -988,6 +1212,10 @@
     .main-content {
       padding-top: calc(var(--nav-height) + 8px) !important;
       margin-left: 0 !important;
+    }
+    /* Push content down a little extra on mobile to add breathing room under nav */
+    .content-column {
+      padding-top: 12px !important;
     }
   }
 

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { projects } from '../data/projects'
 import { useState } from 'react'
+import TiltCard from '../components/TiltCard'
 
 const Projects = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -66,16 +67,18 @@ const Projects = () => {
                 transition={{ delay: 0.2 + index * 0.1 }}
               >
                 <Link to={`/projects/${project.id}`} className="group block">
-                  <div className="relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--glass-shadow)] transition-all duration-500 hover:shadow-[var(--glass-shadow-heavy)] hover:scale-[1.01]">
+                  <TiltCard>
+                    <div className="relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--glass-shadow)] transition-all duration-500 hover:shadow-[var(--glass-shadow-heavy)] project-glass-hover">
                     {/* Image Container */}
                     <div className="relative card-placeholder overflow-hidden">
-                      <div className="w-full h-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5" />
+                      {/* render thumbnail */}
+                      <img src={project.thumbnail} alt={`${project.title} thumbnail`} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-500" />
                     </div>
                     
                     {/* Project Info Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-                      <h3 className="text-3xl font-semibold text-white mb-2 group-hover:text-[var(--accent)] transition-colors">
+                      <h3 className="text-3xl font-semibold text-white mb-2 transition-colors">
                         {project.title}
                       </h3>
                       <p className="text-base text-gray-200">
@@ -83,6 +86,7 @@ const Projects = () => {
                       </p>
                     </div>
                   </div>
+                  </TiltCard>
                 </Link>
               </motion.div>
             ))}

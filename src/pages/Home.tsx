@@ -42,11 +42,20 @@ const Home = () => {
         </div>
 
         <div className="projects-frame">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {projects.slice(0,3).map(p => (
-              <div key={p.id} className="group cursor-pointer project-card-hover">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {projects.slice(0,4).map((p, idx) => (
+              <Link
+                key={p.id}
+                to={`/projects/${p.id}`}
+                className={`group block project-card-hover ${idx === 3 ? 'xl:hidden' : ''}`}
+                aria-label={`Open ${p.title} project`}
+                data-prefetch-src={p.thumbnail}
+              >
                 <div className="relative project-card mb-2">
-                  <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder" />
+                  <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder overflow-hidden">
+                    {/* @ts-ignore */}
+                    <img src={p.thumbnail} alt={`${p.title} thumbnail`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  </div>
                   {/* overlay badge spanning inside the card with balanced padding */}
                   <div className="absolute left-3 right-3 bottom-3">
                     <div className="project-badge glass-heavy">
@@ -55,7 +64,7 @@ const Home = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

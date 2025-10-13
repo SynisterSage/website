@@ -24,6 +24,20 @@ function App() {
 
     function shouldShowSplash(): boolean {
       try {
+        // Do not show the splash on a full page reload — only on fresh entries/navigations.
+        try {
+          const navEntries = (performance && (performance as any).getEntriesByType) ? (performance as any).getEntriesByType('navigation') : null
+          const navType = navEntries && navEntries[0] && navEntries[0].type
+          // navType can be 'navigate', 'reload', 'back_forward', or 'prerender'
+          if (navType === 'reload') return false
+        } catch (e) {
+          // Fallback for older browsers
+          // @ts-ignore
+          if (window.performance && (window.performance as any).navigation && (window.performance as any).navigation.type === 1) {
+            return false
+          }
+        }
+
         const logged = getCookie('userLoggedInAt')
         if (!logged) return false
         const lastLogged = parseInt(logged, 10)
@@ -74,7 +88,7 @@ function App() {
 
     return (
       <footer className="w-full mt-8">
-        <div style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }} className={`w-full footer-main ${sidebarCollapsed ? 'has-collapsed-sidebar' : 'has-expanded-sidebar'} py-6 dotted-line`}>
+        <div className={`w-full footer-main py-6 dotted-line`}>
           <div className="content-column w-full footer-content text-sm" style={{ color: 'var(--muted)' }}>
               <div>Designed with React by Alexander</div>
               <div>© Copyright 2025</div>
@@ -86,15 +100,12 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen">
+      <div className={`min-h-screen ${sidebarCollapsed ? 'has-collapsed-sidebar' : 'has-expanded-sidebar'}`} style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }}>
   {/* Startup redirect will send first-time users to /splash */}
   <StartupRedirect />
   <LayoutControls />
 
-        <main
-          style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }}
-          className={`main-content w-full ${sidebarCollapsed ? 'has-collapsed-sidebar' : 'has-expanded-sidebar'}`}
-        >
+        <main className="main-content w-full">
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/splash" element={<Splash />} />

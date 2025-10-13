@@ -115,10 +115,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
           </div>
         </div>
         <div className="flex gap-4 px-1 social-icons" style={{ color: 'var(--muted)' }}>
-          <a href="https://linkedin.com" className="hover:text-white transition-colors">
+          <a href="https://www.linkedin.com/in/lex-ferguson-3056a3275/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
             <LinkedIn className="w-4 h-4" />
           </a>
-          <a href="https://instagram.com" className="hover:text-white transition-colors">
+          <a href="https://www.instagram.com/lexfergusonn/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
             <Instagram className="w-4 h-4" />
           </a>
         </div>

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link, useParams, Navigate } from 'react-router-dom'
+import { useState } from 'react'
 import { projects } from '../data/projects'
 
 const ProjectDetail = () => {
@@ -10,8 +11,26 @@ const ProjectDetail = () => {
     return <Navigate to="/projects" replace />
   }
 
+  const [expanded, setExpanded] = useState(false)
+  const fullText = project.fullDescription ? project.fullDescription : project.description || ''
+  const isLong = fullText.length > 350 || (project.fullDescription && project.fullDescription.split('\n\n').length > 1)
+
   // Get other projects for "View More" section
-  const otherProjects = projects.filter(p => p.id !== project.id).slice(0, 3)
+  // Strategy: first include projects that share a category with the current project (related),
+  // then fill with recent projects by year. Always exclude the current project and keep order deterministic.
+  const related = projects.filter(p => p.id !== project.id && p.categories.some(cat => project.categories.includes(cat)))
+  // Keep original order for related; if not enough, fill from remaining projects sorted by year desc then title
+  const includedIds = new Set(related.map(r => r.id))
+  const remaining = projects
+    .filter(p => p.id !== project.id && !includedIds.has(p.id))
+    .sort((a, b) => {
+      const ay = Number(a.year || 0)
+      const by = Number(b.year || 0)
+      if (by !== ay) return by - ay
+      return a.title.localeCompare(b.title)
+    })
+
+  const otherProjects = [...related, ...remaining].slice(0, 3)
 
   return (
     <motion.main
@@ -53,7 +72,7 @@ const ProjectDetail = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6 p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)]"
+          className="project-meta grid grid-cols-2 md:grid-cols-4 gap-6 mb-6 p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)]"
         >
           {project.year && (
             <div>
@@ -89,36 +108,70 @@ const ProjectDetail = () => {
           transition={{ delay: 0.3 }}
           className="prose prose-lg max-w-none mb-6"
         >
-          {project.fullDescription ? (
-            project.fullDescription.split('\n\n').map((paragraph, index) => (
+          {!expanded && isLong ? (
+            <div>
+              <p className="text-[var(--text)] mb-4 leading-relaxed service-desc clamped">{fullText}</p>
+              <button
+                className="text-sm text-[var(--muted)] underline-offset-2 hover:underline"
+                onClick={() => setExpanded(true)}
+              >
+                Read more
+              </button>
+            </div>
+          ) : (
+            (project.fullDescription ? project.fullDescription.split('\n\n') : [project.description]).map((paragraph, index) => (
               <p key={index} className="text-[var(--text)] mb-6 leading-relaxed">
                 {paragraph}
               </p>
             ))
-          ) : (
-            <p className="text-[var(--text)] mb-6 leading-relaxed">
-              {project.description}
-            </p>
+          )}
+          {expanded && isLong && (
+            <div>
+              <button className="text-sm text-[var(--muted)] underline-offset-2 hover:underline" onClick={() => setExpanded(false)}>Show less</button>
+            </div>
           )}
         </motion.div>
 
-        {/* Image Gallery - Full Width */}
-        {project.images && project.images.length > 0 && (
+        {/* Image Gallery - Full Width (include thumbnail first, dedupe) */}
+        {/* Assemble gallery in this order: main files (thumbnail + main) -> other images -> videos */}
+        {(
+          (project.thumbnail ? [project.thumbnail] : [])
+        ).filter(Boolean).length > 0 || (project.images || []).length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="space-y-6 mb-6"
           >
-            {project.images.map((_, index) => (
-              <div 
-                key={index} 
-                className="w-full rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder shadow-[var(--glass-shadow)]"
-                style={{ height: '600px' }}
-              />
-            ))}
+            {(() => {
+              // collect ordered lists
+              const mainCandidates = [project.thumbnail, ...(project.images || []).filter(p => /main\./i.test(p))].filter(Boolean)
+              const imagesOnly = (project.images || []).filter(p => /\.(jpe?g|png|gif|svg|webp|avif)$/i.test(p))
+              const videosOnly = (project.images || []).filter(p => /\.(mp4|webm|ogg)$/i.test(p))
+
+              // remove any mainCandidates from imagesOnly to avoid duplicates
+              const mainSet = new Set(mainCandidates)
+              const remainingImages = imagesOnly.filter(i => !mainSet.has(i))
+
+              // final ordered array: mainCandidates (deduped) -> remainingImages -> videosOnly
+              const ordered = Array.from(new Set([...(mainCandidates || []), ...remainingImages, ...videosOnly]))
+
+              return ordered.map((src, index) => (
+                <div
+                  key={index}
+                  className="w-full rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder shadow-[var(--glass-shadow)]"
+                  style={{ height: '600px' }}
+                >
+                  {/\.(mp4|webm|ogg)$/i.test(src) ? (
+                    <video src={src} className="w-full h-full object-cover" playsInline muted loop autoPlay />
+                  ) : (
+                    <img src={src} alt={`${project.title} gallery ${index + 1}`} className="w-full h-full object-cover" />
+                  )}
+                </div>
+              ))
+            })()}
           </motion.div>
-        )}
+        ) : null}
 
         {/* Figma Embed - Full Width */}
         {project.figmaEmbed && (
@@ -135,6 +188,27 @@ const ProjectDetail = () => {
                 allowFullScreen
                 title={`${project.title} Figma Prototype`}
               />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Live Demo Embed (if project.link is provided) */}
+        {project.link && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            className="mb-6"
+          >
+            <div className="w-full rounded-2xl overflow-hidden border border-[var(--border)] shadow-[var(--glass-shadow)]" style={{ height: '600px' }}>
+              <iframe
+                src={project.link}
+                style={{ border: 0, width: '100%', height: '100%' }}
+                title={`${project.title} Live Demo`}
+              />
+            </div>
+            <div className="mt-2 text-sm text-[var(--muted)]">
+              If the demo doesn't load in the embed, <a href={project.link} target="_blank" rel="noopener noreferrer" className="underline">open it in a new tab</a>.
             </div>
           </motion.div>
         )}
@@ -157,29 +231,38 @@ const ProjectDetail = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {otherProjects.map((otherProject) => (
-                <Link 
-                  key={otherProject.id} 
-                  to={`/projects/${otherProject.id}`}
-                  className="group block"
-                >
-                  <div className="relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--glass-shadow)] transition-all duration-500 hover:shadow-[var(--glass-shadow-heavy)] hover:scale-[1.02]">
-                    <div className="relative aspect-[16/10] overflow-hidden">
-                      <div className="w-full h-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-500" />
+              {otherProjects.map((otherProject) => {
+                // choose thumbnail fallback chain
+                const thumb = otherProject.thumbnail || (otherProject.images && otherProject.images[0]) || ''
+                return (
+                  <Link
+                    key={otherProject.id}
+                    to={`/projects/${otherProject.id}`}
+                    className="group block"
+                    data-prefetch-src={thumb}
+                  >
+                    <div className="relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--glass-shadow)] transition-all duration-500 hover:shadow-[var(--glass-shadow-heavy)] hover:scale-[1.02]">
+                      <div className="relative aspect-[16/10] overflow-hidden">
+                        {thumb ? (
+                          <img src={thumb} alt={`${otherProject.title} thumbnail`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder" />
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-500" />
+                      </div>
+
+                      <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+                        <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-[var(--accent)] transition-colors">
+                          {otherProject.title}
+                        </h3>
+                        <p className="text-sm text-gray-200">
+                          {otherProject.categories.join(' • ')}
+                        </p>
+                      </div>
                     </div>
-                    
-                    <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-                      <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-[var(--accent)] transition-colors">
-                        {otherProject.title}
-                      </h3>
-                      <p className="text-sm text-gray-200">
-                        {otherProject.categories.join(' • ')}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                )
+              })}
             </div>
           </motion.section>
         )}
