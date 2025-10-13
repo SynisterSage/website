@@ -1105,6 +1105,8 @@
     .projects-frame .grid { grid-template-columns: repeat(3, minmax(310px, 1fr)); gap: 24px; }
   .projects-frame .card-placeholder { aspect-ratio: 5 / 4; }
     .stack-grid { gap: 1rem 1rem; }
+    /* Hide 4th project card when showing 3 columns */
+    .hidden-fourth { display: none; }
   }
 
   /* Tablet: slightly taller portrait cards and auto-fit columns */

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 type Props = {
   src: string
@@ -12,7 +12,20 @@ type Props = {
 const isVideo = (src: string) => /\.(mp4|webm|ogg)$/i.test(src)
 
 export default function Media({ src, alt = '', className = '', style, onLoad, onError }: Props) {
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [hasError, setHasError] = useState(false)
+
   if (!src) return null
+
+  const handleLoad = () => {
+    setIsLoaded(true)
+    onLoad?.()
+  }
+
+  const handleError = () => {
+    setHasError(true)
+    onError?.()
+  }
 
   if (isVideo(src)) {
     return (
@@ -25,23 +38,27 @@ export default function Media({ src, alt = '', className = '', style, onLoad, on
         loop
         autoPlay
         controls={false}
-        onCanPlay={onLoad}
-        onError={onError}
+        onCanPlay={handleLoad}
+        onError={handleError}
       />
     )
   }
 
   return (
-    // eslint-disable-next-line jsx-a11y/img-redundant-alt
-    <img
-      src={src}
-      alt={alt}
-      className={className || 'w-full h-full object-cover'}
-      style={style}
-      decoding="async"
-      loading="lazy"
-      onLoad={onLoad}
-      onError={onError}
-    />
+    <div className="relative w-full h-full">
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder animate-pulse" />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className || 'w-full h-full object-cover'} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+        style={style}
+        decoding="async"
+        loading="lazy"
+        onLoad={handleLoad}
+        onError={handleError}
+      />
+    </div>
   )
 }

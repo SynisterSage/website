@@ -21,19 +21,48 @@ const Contact = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Build email body with all form data
-    const emailBody = [
-      `Name: ${formData.name}`,
-      `Email: ${formData.email}`,
-      formData.website ? `Website: ${formData.website}` : '',
-      formData.timeline ? `Timeline: ${formData.timeline}` : '',
-      formData.budget ? `Budget: ${formData.budget}` : '',
+    // Build a nicely formatted email body
+    const emailLines = [
+      'Hi Lex,',
       '',
-      'Project Details:',
-      formData.message
-    ].filter(Boolean).join('%0D%0A')
+      formData.message || 'I\'d like to discuss a project with you.',
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '📋 PROJECT INFORMATION',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      `👤 Name: ${formData.name}`,
+      `📧 Email: ${formData.email}`,
+    ]
 
-    const subject = `Website Project Inquiry from ${formData.name}`
+    if (formData.website) {
+      emailLines.push(`🌐 Current Website: ${formData.website}`)
+    }
+    
+    if (formData.timeline) {
+      emailLines.push(`⏰ Timeline: ${formData.timeline}`)
+    } else {
+      emailLines.push(`⏰ Timeline: To be discussed`)
+    }
+    
+    if (formData.budget) {
+      emailLines.push(`💰 Budget: ${formData.budget}`)
+    } else {
+      emailLines.push(`💰 Budget: To be discussed`)
+    }
+    
+    emailLines.push(
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '',
+      'Looking forward to hearing from you!',
+      '',
+      `Best regards,`,
+      formData.name
+    )
+
+    const emailBody = emailLines.join('%0D%0A')
+    const subject = `New Project Inquiry from ${formData.name}`
     const mailtoLink = `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}&body=${emailBody}`
     
     // Open email client

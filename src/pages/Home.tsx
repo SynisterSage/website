@@ -43,12 +43,12 @@ const Home = () => {
         </div>
 
         <div className="projects-frame">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid gap-4">
             {projects.slice(0,4).map((p, idx) => (
               <Link
                 key={p.id}
                 to={`/projects/${p.id}`}
-                className={`group block project-card-hover ${idx === 3 ? 'xl:hidden' : ''}`}
+                className={`group block project-card-hover ${idx === 3 ? 'hidden-fourth' : ''}`}
                 aria-label={`Open ${p.title} project`}
                 data-prefetch-src={p.thumbnail}
               >

@@ -157,7 +157,7 @@ const ProjectDetail = () => {
               if (ordered.length === 1) {
                 const src = ordered[0]
                 return (
-                  <div key={0} className="w-full rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder shadow-[var(--glass-shadow)]">
+                  <div key={0} className="w-full rounded-2xl overflow-hidden shadow-[var(--glass-shadow)]">
                     <div className="w-full h-auto max-h-[800px]">
                       <Media
                         src={src}
@@ -176,7 +176,7 @@ const ProjectDetail = () => {
               return filtered.map((src, index) => (
                 <div
                   key={index}
-                  className="w-full rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder shadow-[var(--glass-shadow)]"
+                  className="w-full rounded-2xl overflow-hidden shadow-[var(--glass-shadow)]"
                   style={{ height: '600px' }}
                 >
                   <Media

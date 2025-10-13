@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import TiltCard from '../components/TiltCard'
 
 type Service = {
@@ -94,9 +94,36 @@ const FAQS: FAQ[] = [
 const Services = () => {
   const [openId, setOpenId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [needsReadMore, setNeedsReadMore] = useState<Record<string, boolean>>({})
+  const descRefs = useRef<Record<string, HTMLParagraphElement | null>>({})
 
   const toggle = (id: string) => setOpenId((cur) => (cur === id ? null : id))
   const toggleExpand = (id: string) => setExpandedId((cur) => (cur === id ? null : id))
+
+  // Check if text is truncated after mount and on resize
+  useEffect(() => {
+    const checkTruncation = () => {
+      const newNeedsReadMore: Record<string, boolean> = {}
+      
+      SERVICES.forEach((service) => {
+        const el = descRefs.current[service.id]
+        if (el) {
+          // Check if content is taller than the clamped height
+          // scrollHeight > clientHeight means text is truncated
+          newNeedsReadMore[service.id] = el.scrollHeight > el.clientHeight
+        }
+      })
+      
+      setNeedsReadMore(newNeedsReadMore)
+    }
+
+    // Check on mount
+    checkTruncation()
+
+    // Check on window resize
+    window.addEventListener('resize', checkTruncation)
+    return () => window.removeEventListener('resize', checkTruncation)
+  }, [])
 
   return (
     <motion.main
@@ -122,6 +149,8 @@ const Services = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {SERVICES.map((service) => {
               const isExpanded = expandedId === service.id
+              const showReadMore = needsReadMore[service.id]
+              
               return (
                 <TiltCard key={service.id}>
                   <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] hover:border-[var(--accent)] transition-colors h-full flex flex-col">
@@ -130,7 +159,10 @@ const Services = () => {
                     </div>
 
                     <div className="flex-1">
-                      <p className={`text-[var(--text)] mb-4 leading-relaxed service-desc ${isExpanded ? 'expanded' : 'clamped'}`}>
+                      <p 
+                        ref={(el) => { descRefs.current[service.id] = el }}
+                        className={`text-[var(--text)] mb-4 leading-relaxed service-desc ${isExpanded ? 'expanded' : 'clamped'}`}
+                      >
                         {service.description}
                       </p>
                     </div>
@@ -138,13 +170,15 @@ const Services = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6">
                       <span className="text-sm font-medium text-[var(--muted)] mb-3 sm:mb-0">{service.price}</span>
                       <div className="flex items-center gap-3 flex-wrap w-full">
-                        <button
-                          type="button"
-                          className="text-sm text-[var(--muted)] underline-offset-2 hover:underline"
-                          onClick={() => toggleExpand(service.id)}
-                        >
-                          {isExpanded ? 'Show less' : 'Read more'}
-                        </button>
+                        {showReadMore && (
+                          <button
+                            type="button"
+                            className="text-sm text-[var(--muted)] underline-offset-2 hover:underline"
+                            onClick={() => toggleExpand(service.id)}
+                          >
+                            {isExpanded ? 'Show less' : 'Read more'}
+                          </button>
+                        )}
 
                         <Link to="/contact" className="btn-primary ml-auto">
                           {service.cta}
