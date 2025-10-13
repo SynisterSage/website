@@ -17,38 +17,38 @@ const Contact = () => {
   const [toastOpen, setToastOpen] = useState(false)
   const [toastVariant, setToastVariant] = useState<'success' | 'error'>('success')
   const [toastMessage, setToastMessage] = useState('')
-  const [isSending, setIsSending] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSending(true)
-    try {
-      const res = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+    
+    // Build email body with all form data
+    const emailBody = [
+      `Name: ${formData.name}`,
+      `Email: ${formData.email}`,
+      formData.website ? `Website: ${formData.website}` : '',
+      formData.timeline ? `Timeline: ${formData.timeline}` : '',
+      formData.budget ? `Budget: ${formData.budget}` : '',
+      '',
+      'Project Details:',
+      formData.message
+    ].filter(Boolean).join('%0D%0A')
 
-      if (res.ok) {
-        setToastVariant('success')
-        setToastMessage('Message sent — thanks!')
-        setToastOpen(true)
-        // reset form
-        setFormData({ name: '', email: '', message: '', website: '', timeline: '', budget: '' })
-      } else {
-        const payload = await res.json().catch(() => ({}))
-        setToastVariant('error')
-        setToastMessage(payload?.error || 'Failed to send message — please try again or use Email link.')
-        setToastOpen(true)
-      }
-    } catch (err: any) {
-      setToastVariant('error')
-      setToastMessage('Network error — please try again or use Email link.')
-      setToastOpen(true)
-    } finally {
-      setIsSending(false)
-      setTimeout(() => setToastOpen(false), 4000)
-    }
+    const subject = `Website Project Inquiry from ${formData.name}`
+    const mailtoLink = `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}&body=${emailBody}`
+    
+    // Open email client
+    window.location.href = mailtoLink
+    
+    // Show toast
+    setToastVariant('success')
+    setToastMessage('Opening email client with your inquiry...')
+    setToastOpen(true)
+    setTimeout(() => setToastOpen(false), 3500)
+    
+    // Reset form after a short delay
+    setTimeout(() => {
+      setFormData({ name: '', email: '', message: '', website: '', timeline: '', budget: '' })
+    }, 1000)
   }
 
   return (
@@ -173,8 +173,7 @@ const Contact = () => {
               <div className="flex items-center gap-4">
                 <button
                   type="submit"
-                  disabled={isSending}
-                  className={`px-8 py-4 bg-accent text-white rounded-md hover:shadow-lg transition-all hover:-translate-y-0.5 ${isSending ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className="px-8 py-4 bg-accent text-white rounded-md hover:shadow-lg transition-all hover:-translate-y-0.5"
                 >
                   Get In Touch
                 </button>
