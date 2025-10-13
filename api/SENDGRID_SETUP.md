@@ -3,7 +3,7 @@
 This project includes a serverless endpoint at `api/send-email.ts` which forwards contact form submissions to SendGrid's mail send API.
 
 Steps to set up SendGrid and test the endpoint
-
+ye
 1. Create a SendGrid account
    - Sign up at https://sendgrid.com and verify your account.
 

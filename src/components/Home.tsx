@@ -47,7 +47,7 @@ const Home = () => {
             {projects.slice(0,3).map(p => (
               <div key={p.id} className="group cursor-pointer project-card-hover">
                 <div className="relative project-card mb-2">
-                  <div className="w-full aspect-[16/9] md:aspect-[16/9] overflow-hidden bg-transparent">
+                  <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder overflow-hidden">
                     <Media src={p.thumbnail} alt={`${p.title} thumbnail`} className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute left-3 right-3 bottom-3">

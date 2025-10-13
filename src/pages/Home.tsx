@@ -53,7 +53,7 @@ const Home = () => {
                 data-prefetch-src={p.thumbnail}
               >
                 <div className="relative project-card mb-2">
-                  <div className="w-full aspect-[16/9] md:aspect-[16/9] overflow-hidden bg-transparent">
+                  <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder overflow-hidden">
                     {/* @ts-ignore */}
                     <Media src={p.thumbnail} alt={`${p.title} thumbnail`} />
                   </div>
