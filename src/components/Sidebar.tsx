@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ThemeContext } from '../context/ThemeProvider'
-import { Home, FolderOpen, User, Briefcase, Mail, Moon, Sun } from 'lucide-react'
+import { Home, FolderOpen, User, Briefcase, Mail, Moon, Sun, Eye, EyeOff } from 'lucide-react'
 import LinkedIn from './icons/LinkedIn'
 import Instagram from './icons/Instagram'
 
@@ -42,7 +42,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
-  const { theme, toggle } = useContext(ThemeContext)
+  const { theme, toggle, spotlightOn, toggleSpotlight } = useContext(ThemeContext)
 
   return (
     <aside
@@ -65,6 +65,15 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
               </button>
 
               <button
+                onClick={() => toggleSpotlight && toggleSpotlight()}
+                aria-label="Toggle spotlight"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                style={{ color: 'var(--text-nav)' }}
+              >
+                {spotlightOn ? <Eye size={16} /> : <EyeOff size={16} />}
+              </button>
+
+              <button
                 onClick={toggle}
                 aria-label="Toggle theme"
                 className="w-8 h-8 rounded-full flex items-center justify-center"
@@ -82,6 +91,14 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
                 style={{ color: 'var(--text-nav)' }}
               >
                 {collapsed ? '»' : '«'}
+              </button>
+              <button
+                onClick={() => toggleSpotlight && toggleSpotlight()}
+                aria-label="Toggle spotlight"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                style={{ color: 'var(--text-nav)' }}
+              >
+                {spotlightOn ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
 
               <button

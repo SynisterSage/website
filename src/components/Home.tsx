@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { projects } from '../data/projects'
+import Media from './Media'
 
 const Home = () => {
   return (
@@ -36,7 +37,7 @@ const Home = () => {
 
         <div className="w-full h-[1px] my-12 border-t dotted-line" />
 
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+  <div className="projects-header flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <h3 className="text-[28px] text-accent font-semibold break-words">Selected Projects</h3>
           <Link to="/projects" title="All Projects" className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap">All Projects</Link>
         </div>
@@ -46,7 +47,9 @@ const Home = () => {
             {projects.slice(0,3).map(p => (
               <div key={p.id} className="group cursor-pointer project-card-hover">
                 <div className="relative project-card mb-2">
-                  <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder" />
+                  <div className="w-full aspect-[16/9] md:aspect-[16/9] overflow-hidden bg-transparent">
+                    <Media src={p.thumbnail} alt={`${p.title} thumbnail`} className="w-full h-full object-cover" />
+                  </div>
                   <div className="absolute left-3 right-3 bottom-3">
                     <div className="project-badge glass-heavy">
                       <div className="text-sm font-medium">{p.title}</div>

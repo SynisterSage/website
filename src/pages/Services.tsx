@@ -135,9 +135,9 @@ const Services = () => {
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between mt-6">
-                      <span className="text-sm font-medium text-[var(--muted)]">{service.price}</span>
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6">
+                      <span className="text-sm font-medium text-[var(--muted)] mb-3 sm:mb-0">{service.price}</span>
+                      <div className="flex items-center gap-3 flex-wrap w-full">
                         <button
                           type="button"
                           className="text-sm text-[var(--muted)] underline-offset-2 hover:underline"
@@ -146,7 +146,7 @@ const Services = () => {
                           {isExpanded ? 'Show less' : 'Read more'}
                         </button>
 
-                        <Link to="/contact" className="btn-primary">
+                        <Link to="/contact" className="btn-primary ml-auto">
                           {service.cta}
                         </Link>
                       </div>

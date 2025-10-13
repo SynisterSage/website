@@ -13,6 +13,7 @@ const Navbar = () => {
   }
 
   const { theme, toggle } = useContext(ThemeContext)
+  // spotlight toggle handled in Sidebar for desktop
   const loc = useLocation()
 
   // derived slug for mobile display when on a project detail route
@@ -31,6 +32,7 @@ const Navbar = () => {
 
         {/* Right: theme toggle + menu */}
         <div className="flex items-center gap-3">
+          {/* Spotlight toggle moved to Sidebar for desktop; not shown in mobile navbar */}
           <button
             onClick={toggle}
             aria-label="Toggle theme"

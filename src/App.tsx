@@ -11,6 +11,7 @@ import Contact from './pages/Contact'
 import About from './pages/About'
 import Services from './pages/Services'
 import Resume from './pages/Resume'
+import GridSpotlight from './components/GridSpotlight'
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -18,43 +19,27 @@ function App() {
   function StartupRedirect() {
     const navigate = useNavigate()
     const { pathname } = window.location
-    function getCookie(name: string) {
-      const v = document.cookie.match('(?:^|; )' + name + '=([^;]*)')
-      return v ? decodeURIComponent(v[1]) : null
-    }
-
     function shouldShowSplash(): boolean {
       try {
         // Do not show the splash on a full page reload — only on fresh entries/navigations.
+        // Show the splash on fresh navigations (opening the site from a link or typing the URL).
+        // Avoid showing on full-page reloads or back/forward navigations.
         try {
           const navEntries = (performance && (performance as any).getEntriesByType) ? (performance as any).getEntriesByType('navigation') : null
           const navType = navEntries && navEntries[0] && navEntries[0].type
           // navType can be 'navigate', 'reload', 'back_forward', or 'prerender'
-          if (navType === 'reload') return false
+          return navType === 'navigate'
         } catch (e) {
-          // Fallback for older browsers
+          // Fallback for older browsers: if performance.navigation exists, treat type 0 as navigate
           // @ts-ignore
-          if (window.performance && (window.performance as any).navigation && (window.performance as any).navigation.type === 1) {
-            return false
+          if (window.performance && (window.performance as any).navigation) {
+            // 0 = navigate, 1 = reload, 2 = back_forward
+            // show only for navigate
+            // @ts-ignore
+            return (window.performance as any).navigation.type === 0
           }
+          return false
         }
-
-        const logged = getCookie('userLoggedInAt')
-        if (!logged) return false
-        const lastLogged = parseInt(logged, 10)
-        if (isNaN(lastLogged)) return false
-        const now = Date.now()
-  const windowMs = 7 * 60 * 60 * 1000 // 7 hours
-  // show only if user logged in within last 7 hours
-  if (now - lastLogged > windowMs) return false
-
-        const splashShown = getCookie('splashShownAt')
-        if (!splashShown) return true
-        const shownAt = parseInt(splashShown, 10)
-        if (isNaN(shownAt)) return true
-  // if splash was shown more than 7 hours ago, allow again
-  if (now - shownAt > windowMs) return true
-        return false
       } catch (e) {
         return false
       }
@@ -107,6 +92,7 @@ function App() {
   <LayoutControls />
 
         <main className="main-content w-full">
+          <GridSpotlight />
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/splash" element={<Splash />} />

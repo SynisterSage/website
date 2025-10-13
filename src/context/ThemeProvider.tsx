@@ -5,6 +5,8 @@ type Theme = 'dark' | 'light'
 interface ThemeContextValue {
   theme: Theme
   toggle: () => void
+  spotlightOn?: boolean
+  toggleSpotlight?: () => void
 }
 
 export const ThemeContext = createContext<ThemeContextValue>({
@@ -33,6 +35,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('theme', theme)
   }, [theme])
 
+  const [spotlightOn, setSpotlightOn] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    const raw = localStorage.getItem('spotlight')
+    if (raw === null) return true
+    return raw === '1'
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('spotlight', spotlightOn ? '1' : '0')
+    } catch (e) {
+      // ignore
+    }
+  }, [spotlightOn])
+
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = (e: MediaQueryListEvent) => setTheme(e.matches ? 'dark' : 'light')
@@ -41,7 +58,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [])
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(t => (t === 'dark' ? 'light' : 'dark')) }}>
+    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(t => (t === 'dark' ? 'light' : 'dark')), spotlightOn, toggleSpotlight: () => setSpotlightOn(s => !s) }}>
       {children}
     </ThemeContext.Provider>
   )

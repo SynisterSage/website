@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-// Serverless endpoint to forward contact form to SendGrid.
-// Requires environment variable SENDGRID_API_KEY and optionally FROM_EMAIL.
+// Serverless endpoint to forward contact form to SendGrid using the Web API via fetch.
+// Requires environment variable SENDGRID_API_KEY and optionally FROM_EMAIL and TO_EMAIL.
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST')
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
@@ -12,13 +13,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { name, email, message, website, timeline, budget } = req.body || {}
 
   if (!name || !email || !message) {
-    res.status(400).json({ error: 'Missing required fields' })
+    res.status(400).json({ error: 'Missing required fields: name, email, message' })
     return
   }
 
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY
   const TO_EMAIL = process.env.TO_EMAIL || 'afergyy@gmail.com'
-  const FROM_EMAIL = process.env.FROM_EMAIL || 'no-reply@' + (process.env.VERCEL_URL || 'example.com')
+  const FROM_EMAIL = process.env.FROM_EMAIL || `no-reply@${process.env.VERCEL_URL || 'example.com'}`
 
   if (!SENDGRID_API_KEY) {
     res.status(500).json({ error: 'SendGrid API key not configured (SENDGRID_API_KEY).' })
@@ -62,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(200).json({ ok: true })
     } else {
       const text = await r.text()
+      // Pass SendGrid response body through for debugging
       res.status(502).json({ error: 'SendGrid error', detail: text })
     }
   } catch (err: any) {

@@ -15,10 +15,9 @@ export default function Splash() {
       <LogoPreloader
         duration={3800}
         onComplete={() => {
-          const now = Date.now()
-          // set cookie for 1 day
-          const expires = new Date(now + 7 * 60 * 60 * 1000).toUTCString()
-          document.cookie = `splashShownAt=${now}; expires=${expires}; path=/`
+          // Navigate back to home after the preloader finishes. We intentionally
+          // do not set a cookie so the preloader will run on every fresh navigation
+          // (opening the site), but our StartupRedirect logic prevents it on reloads.
           navigate('/', { replace: true })
         }}
       />

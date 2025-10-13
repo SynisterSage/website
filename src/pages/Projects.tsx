@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { projects } from '../data/projects'
 import { useState } from 'react'
 import TiltCard from '../components/TiltCard'
+import Media from '../components/Media'
 
 const Projects = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -70,9 +71,9 @@ const Projects = () => {
                   <TiltCard>
                     <div className="relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--glass-shadow)] transition-all duration-500 hover:shadow-[var(--glass-shadow-heavy)] project-glass-hover">
                     {/* Image Container */}
-                    <div className="relative card-placeholder overflow-hidden">
+                    <div className="w-full aspect-[16/9] md:aspect-[16/9] relative card-placeholder overflow-hidden">
                       {/* render thumbnail */}
-                      <img src={project.thumbnail} alt={`${project.title} thumbnail`} className="w-full h-full object-cover" />
+                      <Media src={project.thumbnail} alt={`${project.title} thumbnail`} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-500" />
                     </div>
                     

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import LinkedIn from '../components/icons/LinkedIn'
 import Instagram from '../components/icons/Instagram'
+import SITE from '../data/site'
 import Toast from '../components/Toast'
 
 const Contact = () => {
@@ -179,13 +180,13 @@ const Contact = () => {
                 </button>
 
                 <a
-                  href="mailto:afergyy@gmail.com"
+                  href={`mailto:${SITE.email}?subject=${encodeURIComponent('Website inquiry')}&body=${encodeURIComponent('Hi Lex,%0D%0A%0D%0AI\'d like to discuss a project...')}`}
                   className="btn-secondary"
                   onClick={() => {
                     setToastOpen(true)
                     setTimeout(() => setToastOpen(false), 3500)
                   }}
-                  aria-label="Open mail app to email afergyy@gmail.com"
+                  aria-label={`Open mail app to email ${SITE.email}`}
                 >
                   Email
                 </a>
@@ -202,7 +203,7 @@ const Contact = () => {
             >
               <h3 className="text-xl font-semibold mb-2">Let's Connect</h3>
               <p className="text-sm text-[var(--muted)] mb-4">Email</p>
-              <a href="mailto:afergyy@gmail.com" className="text-accent font-medium">afergyy@gmail.com</a>
+              <a href={`mailto:${SITE.email}`} className="text-accent font-medium">{SITE.email}</a>
 
               <div className="w-full h-[1px] my-6 border-t dotted-line" />
 

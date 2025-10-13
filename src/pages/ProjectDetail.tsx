@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import { projects } from '../data/projects'
+import Media from '../components/Media'
 
 const ProjectDetail = () => {
   const { projectId } = useParams<{ projectId: string }>()
@@ -12,6 +13,7 @@ const ProjectDetail = () => {
   }
 
   const [expanded, setExpanded] = useState(false)
+  const [failedSrcs, setFailedSrcs] = useState<Record<string, boolean>>({})
   const fullText = project.fullDescription ? project.fullDescription : project.description || ''
   const isLong = fullText.length > 350 || (project.fullDescription && project.fullDescription.split('\n\n').length > 1)
 
@@ -144,29 +146,44 @@ const ProjectDetail = () => {
             className="space-y-6 mb-6"
           >
             {(() => {
-              // collect ordered lists
-              const mainCandidates = [project.thumbnail, ...(project.images || []).filter(p => /main\./i.test(p))].filter(Boolean)
-              const imagesOnly = (project.images || []).filter(p => /\.(jpe?g|png|gif|svg|webp|avif)$/i.test(p))
-              const videosOnly = (project.images || []).filter(p => /\.(mp4|webm|ogg)$/i.test(p))
+              // Build gallery in a predictable order while avoiding duplicates
+              const allImages = project.images || []
+              const videosOnly = allImages.filter(p => /\.(mp4|webm|ogg)$/i.test(p))
+              const otherImages = allImages.filter(p => /\.(jpe?g|png|gif|svg|webp|avif)$/i.test(p) && p !== project.thumbnail)
 
-              // remove any mainCandidates from imagesOnly to avoid duplicates
-              const mainSet = new Set(mainCandidates)
-              const remainingImages = imagesOnly.filter(i => !mainSet.has(i))
+              // final ordered array: thumbnail (if present) -> otherImages -> videosOnly
+              const ordered = Array.from(new Set([...(project.thumbnail ? [project.thumbnail] : []), ...otherImages, ...videosOnly]))
+              // If there's exactly one image (thumbnail only, or single main), render it without a giant placeholder
+              if (ordered.length === 1) {
+                const src = ordered[0]
+                return (
+                  <div key={0} className="w-full rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder shadow-[var(--glass-shadow)]">
+                    <div className="w-full h-auto max-h-[800px]">
+                      <Media
+                        src={src}
+                        alt={`${project.title} gallery`}
+                        className="w-full h-full object-contain"
+                        onError={() => setFailedSrcs(prev => ({ ...prev, [src]: true }))}
+                      />
+                    </div>
+                  </div>
+                )
+              }
 
-              // final ordered array: mainCandidates (deduped) -> remainingImages -> videosOnly
-              const ordered = Array.from(new Set([...(mainCandidates || []), ...remainingImages, ...videosOnly]))
+              // Filter out any sources that failed to load
+              const filtered = ordered.filter(src => !failedSrcs[src])
 
-              return ordered.map((src, index) => (
+              return filtered.map((src, index) => (
                 <div
                   key={index}
                   className="w-full rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 card-placeholder shadow-[var(--glass-shadow)]"
                   style={{ height: '600px' }}
                 >
-                  {/\.(mp4|webm|ogg)$/i.test(src) ? (
-                    <video src={src} className="w-full h-full object-cover" playsInline muted loop autoPlay />
-                  ) : (
-                    <img src={src} alt={`${project.title} gallery ${index + 1}`} className="w-full h-full object-cover" />
-                  )}
+                  <Media
+                    src={src}
+                    alt={`${project.title} gallery ${index + 1}`}
+                    onError={() => setFailedSrcs(prev => ({ ...prev, [src]: true }))}
+                  />
                 </div>
               ))
             })()}
@@ -223,7 +240,7 @@ const ProjectDetail = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
+            <div className="projects-header flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
               <h2 className="text-3xl font-bold text-accent break-words">View More Projects</h2>
               <Link to="/projects" title="All Projects" className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap">
                 All Projects
@@ -252,7 +269,7 @@ const ProjectDetail = () => {
                       </div>
 
                       <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-                        <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-[var(--accent)] transition-colors">
+                        <h3 className="text-lg font-semibold text-white mb-1 transition-colors">
                           {otherProject.title}
                         </h3>
                         <p className="text-sm text-gray-200">
