@@ -223,9 +223,9 @@ const ProjectDetail = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-bold text-accent">View More Projects</h2>
-              <Link to="/projects" className="btn-secondary">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
+              <h2 className="text-3xl font-bold text-accent break-words">View More Projects</h2>
+              <Link to="/projects" title="All Projects" className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap">
                 All Projects
               </Link>
             </div>

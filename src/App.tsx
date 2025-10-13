@@ -10,6 +10,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import Contact from './pages/Contact'
 import About from './pages/About'
 import Services from './pages/Services'
+import Resume from './pages/Resume'
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -113,6 +114,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:projectId" element={<ProjectDetail />} />
+              <Route path="/resume" element={<Resume />} />
               <Route path="/services" element={<Services />} />
               <Route path="/contact" element={<Contact />} />
             </Routes>

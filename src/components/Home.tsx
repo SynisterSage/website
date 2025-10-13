@@ -31,14 +31,14 @@ const Home = () => {
 
         <div className="flex gap-4">
           <Link to="/contact" className="btn-primary">Get in Touch</Link>
-          <a href="#" className="btn-secondary">View Resume</a>
+          <Link to="/resume" className="btn-secondary">View Resume</Link>
         </div>
 
         <div className="w-full h-[1px] my-12 border-t dotted-line" />
 
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-[28px] text-accent font-semibold">Selected Projects</h3>
-          <Link to="/projects" className="btn-secondary">All Projects</Link>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+          <h3 className="text-[28px] text-accent font-semibold break-words">Selected Projects</h3>
+          <Link to="/projects" title="All Projects" className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap">All Projects</Link>
         </div>
 
         <div className="projects-frame">
