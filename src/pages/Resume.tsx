@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useHaptic } from '../hooks/useHaptic'
+import { logDownload } from '../utils/analytics'
 
 const Resume = () => {
   const { triggerHaptic } = useHaptic()
@@ -30,7 +31,10 @@ const Resume = () => {
             className="btn-primary" 
             download
             onMouseEnter={() => triggerHaptic('hover')}
-            onClick={() => triggerHaptic('button')}
+            onClick={() => {
+              triggerHaptic('button')
+              logDownload('Resume PDF')
+            }}
           >
             Download PDF
           </a>

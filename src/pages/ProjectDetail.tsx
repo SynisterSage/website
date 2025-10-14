@@ -1,14 +1,22 @@
 import { motion } from 'framer-motion'
 import { Link, useParams, Navigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { projects } from '../data/projects'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
+import { logProjectView } from '../utils/analytics'
 
 const ProjectDetail = () => {
   const { triggerHaptic } = useHaptic()
   const { projectId } = useParams<{ projectId: string }>()
   const project = projects.find(p => p.id === projectId)
+
+  // Track project view in Google Analytics
+  useEffect(() => {
+    if (project) {
+      logProjectView(project.title)
+    }
+  }, [project])
 
   if (!project) {
     return <Navigate to="/projects" replace />

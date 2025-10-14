@@ -6,6 +6,7 @@ import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import GridSpotlight from './components/GridSpotlight'
 import HapticToggle from './components/HapticToggle'
+import { initGA, logPageView } from './utils/analytics'
 
 // Lazy load route components for code splitting and faster initial load
 const Home = lazy(() => import('./pages/Home'))
@@ -18,9 +19,18 @@ const Resume = lazy(() => import('./pages/Resume'))
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  
+  // Initialize Google Analytics once on mount
+  useEffect(() => {
+    initGA()
+  }, [])
+  
   function ScrollToTop() {
     const location = useLocation()
     useEffect(() => {
+      // Track page view with Google Analytics
+      logPageView(location.pathname + location.search)
+      
       // Always jump to top on route change so each page opens at the top.
       // Do multiple attempts (immediate, requestAnimationFrame, timeout) to
       // counter any layout transitions that might re-apply a scroll position.

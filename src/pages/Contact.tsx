@@ -5,6 +5,7 @@ import Instagram from '../components/icons/Instagram'
 import SITE from '../data/site'
 import Toast from '../components/Toast'
 import { useHaptic } from '../hooks/useHaptic'
+import { logFormSubmit, logEvent } from '../utils/analytics'
 
 const Contact = () => {
   const { triggerHaptic } = useHaptic()
@@ -22,6 +23,10 @@ const Contact = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Track form submission in Google Analytics
+    logFormSubmit('Contact Form')
+    logEvent('Contact', 'Submit', 'Contact Form Submission')
     
     // Trigger success haptic
     triggerHaptic('success')

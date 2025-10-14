@@ -138,10 +138,10 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
               />
             </div>
             <div className="mt-3 flex items-center justify-between glass-hint-row">
-              <div className="text-xs tracking-wide text-[color:var(--muted)]">Loading experience</div>
+              <div className="text-xs tracking-wide text-[color:var(--muted)]">Loading experience</div>
               <div className="text-xs text-[color:var(--muted)] loader-hint" aria-live="polite">
                 {/* accessible hint; text changes based on pointer type via JS/CSS */}
-                {('ontouchstart' in window) ? 'Tap and hold to skip' : 'Hold Space to skip'}
+                Hold to skip
               </div>
             </div>
           </div>

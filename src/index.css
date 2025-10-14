@@ -626,11 +626,8 @@
     gap: 8px;
   }
 
-  /* Loader hint text: show device-appropriate instruction */
-  .loader-hint::before { content: 'Press and hold to fast-forward'; }
-  @media (pointer: coarse), (max-width: 1199px) {
-    .loader-hint::before { content: 'Tap and hold to skip'; }
-  }
+  /* Loader hint text: unified instruction for all devices */
+  .loader-hint::before { content: 'Hold to skip'; }
 
 
   @supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
