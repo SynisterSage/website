@@ -103,8 +103,41 @@
   .footer-content { flex-direction: column; gap: 6px; align-items: flex-start; }
 }
 
-/* Keep dotted line consistent */
-  .dotted-line { border-top: 2px dotted var(--border); }
+  /* Keep dotted line consistent */
+  .dotted-line { border-top: 2px dotted var(--border); margin: 0; }
+
+  /* Section dividers: when used inside page content (content-column / page-pad)
+     ensure consistent vertical spacing. Footer dotted-line intentionally left
+     without large margins so it hugs the footer. */
+  .content-column .dotted-line,
+  .page-pad .dotted-line {
+    margin: var(--dotted-gap, 3rem) 0;
+    border-top-width: 2px;
+  }
+
+  /* Slightly tighter spacing on smaller screens */
+  @media (max-width: 640px) {
+    .content-column .dotted-line,
+    .page-pad .dotted-line {
+      margin: calc(var(--dotted-gap, 3rem) / 1.6) 0; /* ~1.875rem */
+      border-top-width: 1px;
+    }
+  }
+
+  /* Move the dotted-line down specifically when it directly follows a CTA row
+     (commonly used on the Home page). This ensures the divider sits evenly under
+     the primary CTA cluster across all breakpoints. */
+  .content-column .flex + .dotted-line {
+    margin-top: 3.5rem; /* slightly larger gap under CTAs */
+    margin-bottom: 2.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .content-column .flex + .dotted-line {
+      margin-top: 2.25rem;
+      margin-bottom: 1.75rem;
+    }
+  }
 
 /* Slightly tighter spacing across sections for visual balance */
 .content-column { gap: 0.5rem; }
@@ -536,6 +569,26 @@
     font-size: 13px;
   }
 
+  /* new: available-dot glow + blink */
+  .available-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; }
+  .available-dot .dot-core {
+    width: 8px; height: 8px; border-radius: 999px; background: #34d399; box-shadow: 0 0 0 0 rgba(52,211,153,0.6); display: block;
+    transition: box-shadow 300ms var(--ui-ease), transform 220ms var(--ui-ease);
+    will-change: box-shadow, transform;
+    animation: dot-pulse 1800ms infinite;
+  }
+
+  @keyframes dot-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); transform: scale(1); }
+    50% { box-shadow: 0 0 12px 6px rgba(52,211,153,0.12); transform: scale(1.05); }
+    100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.0); transform: scale(1); }
+  }
+
+  .available-pill:focus, .available-pill:focus-visible {
+    outline: 3px solid color-mix(in srgb, #34d399 35%, transparent);
+    outline-offset: 3px;
+  }
+
   /* per-card outline appearance (simplified) */
 
   /* project badge updated to use glass styling (softer, semi-transparent) */
@@ -560,6 +613,25 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  /* Loader glass UI tweaks */
+  .progress-loader-container {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--glass-shadow-sm);
+  }
+
+  .glass-hint-row {
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Loader hint text: show device-appropriate instruction */
+  .loader-hint::before { content: 'Press and hold to fast-forward'; }
+  @media (pointer: coarse), (max-width: 1199px) {
+    .loader-hint::before { content: 'Tap and hold to skip'; }
+  }
+
 
   @supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
     .project-badge {
@@ -644,6 +716,30 @@
   .brand-link:hover {
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+  }
+
+  /* Home page name: initial entrance animation and magnetic smoothing */
+  .home-name {
+    transform-style: preserve-3d;
+    transition: transform 260ms var(--ui-ease);
+    backface-visibility: hidden;
+    will-change: transform;
+    opacity: 0;
+    transform-origin: center;
+    animation: name-entrance 820ms cubic-bezier(.2,.9,.2,1) forwards;
+    /* minor translateZ to lift above grid */
+  }
+
+  @keyframes name-entrance {
+    0% { transform: translateY(-18px) scale(0.98) rotateX(6deg); opacity: 0 }
+    70% { opacity: 1 }
+    100% { transform: translateY(0) scale(1) rotateX(0deg); opacity: 1 }
+  }
+
+  /* reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .available-dot .dot-core { animation: none !important }
+    .home-name { animation: none !important; transition: none !important; transform: none !important; opacity: 1 !important }
   }
 
   /* Respect reduced motion preferences */
@@ -1312,6 +1408,20 @@
   .page-pad {
     padding-top: 0; /* Top padding now handled by .main-content */
     padding-bottom: 28px; /* Reduced bottom padding for tighter footer spacing */
+  }
+
+  /* Mobile-specific spacing tweaks */
+  @media (max-width: 640px) {
+    /* Give CTAs and the dotted divider more breathing room on small screens */
+    .page-pad .projects-header {
+      margin-top: 20px;
+    }
+    .page-pad .w-full.h-\[1px\].my-12 {
+      margin-top: 20px;
+      margin-bottom: 28px;
+    }
+    /* Ensure there's enough bottom padding so the footer can be reached on short pages */
+    .page-pad { padding-bottom: 64px; }
   }
 
   /* Light mode: add subtle border at top for definition */

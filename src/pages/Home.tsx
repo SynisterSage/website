@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
 import { projects } from '../data/projects'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
@@ -7,6 +8,64 @@ import { useHaptic } from '../hooks/useHaptic'
 const Home = () => {
   const { triggerHaptic } = useHaptic()
   
+  // magnetic tilt for name: use local handlers (smoother via CSS transition)
+  const nameRef = useRef<HTMLHeadingElement | null>(null)
+
+  function handleNamePointerMove(e: React.PointerEvent<HTMLHeadingElement>) {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const cx = rect.left + rect.width / 2
+    const cy = rect.top + rect.height / 2
+    const dx = (e.clientX - cx) / rect.width
+    const dy = (e.clientY - cy) / rect.height
+    const rx = (-dy * 5).toFixed(2)
+    const ry = (dx * 5).toFixed(2)
+    el.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(6px)`
+  }
+
+  function handleNamePointerLeave(e: React.PointerEvent<HTMLHeadingElement>) {
+    const el = e.currentTarget
+    // smooth reset
+    el.style.transform = 'perspective(700px) rotateX(0deg) rotateY(0deg) translateZ(0px)'
+  }
+
+  // One-time deobfuscation on first session visit: scramble -> reveal
+  useEffect(() => {
+    const key = 'nameDeobfuscated'
+    const final = "Hey, I'm Alexander!"
+    const el = nameRef.current
+    if (!el) return
+    if (sessionStorage.getItem(key) === '1') {
+      el.textContent = final
+      return
+    }
+
+    // scramble animation
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_-+=<>?/{}[]~1234567890"
+    const duration = 900
+    const start = performance.now()
+    let raf = 0
+
+    const frame = (t: number) => {
+      const p = Math.min(1, (t - start) / duration)
+      const reveal = Math.floor(p * final.length)
+      let out = ''
+      for (let i = 0; i < final.length; i++) {
+        if (i < reveal) out += final[i]
+        else out += chars[Math.floor(Math.random() * chars.length)]
+      }
+      el.textContent = out
+      if (p < 1) raf = requestAnimationFrame(frame)
+      else {
+        el.textContent = final
+        try { sessionStorage.setItem(key, '1') } catch (e) { /* ignore */ }
+      }
+    }
+
+    raf = requestAnimationFrame(frame)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
   return (
     <motion.main
       initial={{ opacity: 0 }}
@@ -16,13 +75,19 @@ const Home = () => {
     >
   <div className="content-column home-page mb-6">
         <div className="mb-6">
-          <span className="available-pill">
-            <span className="w-2 h-2 bg-green-400 rounded-full" /> Available for Work
-          </span>
+          <Link to="/contact" className="available-pill" onMouseEnter={() => triggerHaptic('hover')} onClick={() => triggerHaptic('click')}>
+            <span className="available-dot" aria-hidden="true"><span className="dot-core" /></span>
+            Available for Work
+          </Link>
         </div>
 
-        <h1 className="text-5xl font-semibold text-accent mb-4">
-          Hey, I'm Alexander!
+        <h1
+          ref={nameRef}
+          className="text-5xl font-semibold text-accent mb-4 home-name"
+          onPointerMove={handleNamePointerMove}
+          onPointerLeave={handleNamePointerLeave}
+        >
+          {/* text content will be populated by effect (scramble -> reveal) */}
         </h1>
         <h2 className="text-xl text-gray-600 mb-6">Web & Visual Designer</h2>
 

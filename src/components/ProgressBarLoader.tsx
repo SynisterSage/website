@@ -29,16 +29,18 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
   const [stepIndex, setStepIndex] = useState(0)
   const controls = useAnimationControls()
   const started = useRef(false)
+  const fastRef = useRef({ multiplier: 1 })
+  const holding = useRef(false)
 
   useEffect(() => {
-    // Kickoff animation and simulated progress
+    // Kickoff animation and simulated progress. Supports fast-forward multiplier when holding.
     if (started.current) return
     started.current = true
     const startTime = performance.now()
 
     const tick = () => {
       const t = performance.now()
-      const elapsed = t - startTime
+      const elapsed = (t - startTime) * fastRef.current.multiplier
       const pct = Math.min(1, elapsed / duration)
       const eased = 1 - Math.pow(1 - pct, 2) // easeOutQuad
       setProgress(eased)
@@ -63,6 +65,52 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
     requestAnimationFrame(tick)
   }, [duration])
 
+  // Hold/fast-forward handlers: on desktop use Space key hold; on mobile use touchstart/hold.
+  useEffect(() => {
+    let spaceDown = false
+
+    const setFast = (mult = 4) => { fastRef.current.multiplier = mult }
+    const resetFast = () => { fastRef.current.multiplier = 1 }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !spaceDown) {
+        spaceDown = true
+        holding.current = true
+        setFast(6) // much faster when holding space
+      }
+    }
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        spaceDown = false
+        holding.current = false
+        resetFast()
+      }
+    }
+
+    const onTouchStart = () => {
+      holding.current = true
+      setFast(5)
+    }
+
+    const onTouchEnd = () => {
+      holding.current = false
+      resetFast()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchend', onTouchEnd)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [])
+
   const containerStyle: React.CSSProperties = useMemo(() => ({
     position: 'fixed', inset: 0, display: 'grid', placeItems: 'center', zIndex: 9999,
     padding: '24px',
@@ -72,7 +120,7 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
     <div className="fixed inset-0" style={{ zIndex: 9998 }}>
       <div style={containerStyle}>
         <div className="w-full max-w-xl rounded-xl p-[1px]" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--accent), white 25%), transparent)' }}>
-          <div className="rounded-xl bg-[color:var(--glass-bg,rgba(255,255,255,0.06))] p-4 backdrop-blur-md border" style={{ borderColor: 'var(--glass-border, rgba(255,255,255,0.10))' }}>
+          <div className="rounded-xl progress-loader-container p-4 backdrop-blur-md border" style={{ borderColor: 'var(--glass-border, rgba(255,255,255,0.10))' }} data-pointer-type={typeof window !== 'undefined' && ('ontouchstart' in window ? 'coarse' : 'fine')}>
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm text-[color:var(--muted)]">{steps[stepIndex]}</div>
               <div className="text-xs text-[color:var(--muted)]">{Math.round(progress * 100)}%</div>
@@ -89,9 +137,12 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
                 }}
               />
             </div>
-            <div className="mt-3 flex items-center justify-between">
-              <div className="text-xs tracking-wide text-[color:var(--muted)]">Loading experience…</div>
-              <div className="text-xs text-[color:var(--muted)]">Press and hold to fast-forward</div>
+            <div className="mt-3 flex items-center justify-between glass-hint-row">
+              <div className="text-xs tracking-wide text-[color:var(--muted)]">Loading experience</div>
+              <div className="text-xs text-[color:var(--muted)] loader-hint" aria-live="polite">
+                {/* accessible hint; text changes based on pointer type via JS/CSS */}
+                {('ontouchstart' in window) ? 'Tap and hold to skip' : 'Hold Space to skip'}
+              </div>
             </div>
           </div>
         </div>

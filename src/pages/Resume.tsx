@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useHaptic } from '../hooks/useHaptic'
 
@@ -5,7 +6,12 @@ const Resume = () => {
   const { triggerHaptic } = useHaptic()
   
   return (
-    <main className="min-h-screen page-pad">
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen page-pad"
+    >
   <div className="content-column mb-6 resume-page">
         <h1 className="text-3xl font-bold text-accent mb-4">Resume</h1>
         <p className="mb-6 text-sm text-[var(--muted)]">Full resume (PDF). Use the controls below to download or view full screen.</p>
@@ -38,7 +44,7 @@ const Resume = () => {
           </Link>
         </div>
       </div>
-    </main>
+    </motion.main>
   )
 }
 

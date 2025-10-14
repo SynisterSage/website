@@ -3,13 +3,23 @@
  * Allows users to enable/disable haptic feedback
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { hapticManager } from '../utils/hapticManager'
 
 const HapticToggle = () => {
-  const [hapticEnabled, setHapticEnabled] = useState(hapticManager.isEnabled())
+  const [hapticEnabled, setHapticEnabled] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Render only on client so navigator detection is accurate on deployed sites
+  useEffect(() => {
+    setMounted(true)
+    setHapticEnabled(hapticManager.isEnabled())
+  }, [])
+
+  if (!mounted) return null
+
   const hapticSupported = hapticManager.isSupported()
 
   // Don't show the toggle if haptic is not supported
@@ -26,7 +36,7 @@ const HapticToggle = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+  <div className="fixed bottom-6 right-6 z-[1300] md:z-50 lg:z-50">
       <AnimatePresence>
         {isOpen && (
           <motion.div
