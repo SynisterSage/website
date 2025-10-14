@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useHaptic } from '../hooks/useHaptic'
 
 const Resume = () => {
+  const { triggerHaptic } = useHaptic()
+  
   return (
     <main className="min-h-screen page-pad">
   <div className="content-column mb-6 resume-page">
@@ -16,8 +19,23 @@ const Resume = () => {
         </div>
 
         <div className="flex gap-4">
-          <a href="/icons/FINAL%20RESUME.pdf" className="btn-primary" download>Download PDF</a>
-          <Link to="/" className="btn-secondary">Back Home</Link>
+          <a 
+            href="/icons/FINAL%20RESUME.pdf" 
+            className="btn-primary" 
+            download
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('button')}
+          >
+            Download PDF
+          </a>
+          <Link 
+            to="/" 
+            className="btn-secondary"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('click')}
+          >
+            Back Home
+          </Link>
         </div>
       </div>
     </main>

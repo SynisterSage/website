@@ -2,8 +2,11 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { projects } from '../data/projects'
 import Media from '../components/Media'
+import { useHaptic } from '../hooks/useHaptic'
 
 const Home = () => {
+  const { triggerHaptic } = useHaptic()
+  
   return (
     <motion.main
       initial={{ opacity: 0 }}
@@ -31,15 +34,37 @@ const Home = () => {
         </p>
 
         <div className="flex gap-4">
-          <Link to="/contact" className="btn-primary">Get in Touch</Link>
-          <Link to="/resume" className="btn-secondary">View Resume</Link>
+          <Link 
+            to="/contact" 
+            className="btn-primary"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('button')}
+          >
+            Get in Touch
+          </Link>
+          <Link 
+            to="/resume" 
+            className="btn-secondary"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('click')}
+          >
+            View Resume
+          </Link>
         </div>
 
         <div className="w-full h-[1px] my-12 border-t dotted-line" />
 
   <div className="projects-header flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <h3 className="text-[28px] text-accent font-semibold break-words">Selected Projects</h3>
-          <Link to="/projects" title="All Projects" className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap">All Projects</Link>
+          <Link 
+            to="/projects" 
+            title="All Projects" 
+            className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('click')}
+          >
+            All Projects
+          </Link>
         </div>
 
         <div className="projects-frame">
@@ -51,6 +76,8 @@ const Home = () => {
                 className={`group block project-card-hover ${idx === 3 ? 'hidden-fourth' : ''}`}
                 aria-label={`Open ${p.title} project`}
                 data-prefetch-src={p.thumbnail}
+                onMouseEnter={() => triggerHaptic('hover')}
+                onClick={() => triggerHaptic('click')}
               >
                 <div className="relative project-card mb-2">
                   <div className="w-full aspect-[16/9] md:aspect-[16/9] card-placeholder overflow-hidden">

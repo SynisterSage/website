@@ -42,12 +42,12 @@ export default function GridLinesInteractive() {
     vLinesRef.current = new Array(vCount).fill(null)
     hLinesRef.current = new Array(hCount).fill(null)
 
-    // mouse handling only on fine pointers and spotlight enabled
-    const mq = window.matchMedia('(pointer: fine)')
-    const wide = window.matchMedia('(min-width: 1200px)')
-    const enabled = mq.matches && wide.matches && spotlightOn
+  // mouse handling only on fine pointers and spotlight enabled
+  const mq = window.matchMedia('(pointer: fine)')
+  const wide = window.matchMedia('(min-width: 1200px)')
+  const shouldEnableInteraction = () => mq.matches && wide.matches && spotlightOn
 
-    let mounted = true
+  let mounted = true
 
     function updateHighlight() {
       if (!mounted) return
@@ -158,7 +158,9 @@ export default function GridLinesInteractive() {
       hLinesRef.current[j] = line
     }
 
-    if (enabled) {
+    // Attach listeners only when appropriate (fine pointer + wide screen + spotlight on).
+    // But always leave the SVG in the DOM so the subtle grid is visible on all devices.
+    if (shouldEnableInteraction()) {
       window.addEventListener('mousemove', onMove)
       window.addEventListener('mouseout', (ev) => { if ((ev as MouseEvent).relatedTarget === null) onLeave() })
       window.addEventListener('mouseleave', onLeave)
@@ -166,7 +168,7 @@ export default function GridLinesInteractive() {
 
     return () => {
       mounted = false
-      if (enabled) {
+      if (shouldEnableInteraction()) {
         window.removeEventListener('mousemove', onMove)
         window.removeEventListener('mouseleave', onLeave)
       }

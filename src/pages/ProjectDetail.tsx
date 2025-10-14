@@ -3,8 +3,10 @@ import { Link, useParams, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import { projects } from '../data/projects'
 import Media from '../components/Media'
+import { useHaptic } from '../hooks/useHaptic'
 
 const ProjectDetail = () => {
+  const { triggerHaptic } = useHaptic()
   const { projectId } = useParams<{ projectId: string }>()
   const project = projects.find(p => p.id === projectId)
 
@@ -51,6 +53,8 @@ const ProjectDetail = () => {
           <Link 
             to="/projects" 
             className="inline-flex items-center gap-2 text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('click')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -115,7 +119,10 @@ const ProjectDetail = () => {
               <p className="text-[var(--text)] mb-4 leading-relaxed service-desc clamped">{fullText}</p>
               <button
                 className="text-sm text-[var(--muted)] underline-offset-2 hover:underline"
-                onClick={() => setExpanded(true)}
+                onClick={() => {
+                  triggerHaptic('click')
+                  setExpanded(true)
+                }}
               >
                 Read more
               </button>
@@ -129,7 +136,15 @@ const ProjectDetail = () => {
           )}
           {expanded && isLong && (
             <div>
-              <button className="text-sm text-[var(--muted)] underline-offset-2 hover:underline" onClick={() => setExpanded(false)}>Show less</button>
+              <button 
+                className="text-sm text-[var(--muted)] underline-offset-2 hover:underline" 
+                onClick={() => {
+                  triggerHaptic('click')
+                  setExpanded(false)
+                }}
+              >
+                Show less
+              </button>
             </div>
           )}
         </motion.div>
@@ -242,7 +257,13 @@ const ProjectDetail = () => {
           >
             <div className="projects-header flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
               <h2 className="text-3xl font-bold text-accent break-words">View More Projects</h2>
-              <Link to="/projects" title="All Projects" className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap">
+              <Link 
+                to="/projects" 
+                title="All Projects" 
+                className="btn-secondary self-end mt-4 sm:mt-0 whitespace-nowrap"
+                onMouseEnter={() => triggerHaptic('hover')}
+                onClick={() => triggerHaptic('click')}
+              >
                 All Projects
               </Link>
             </div>
@@ -257,6 +278,8 @@ const ProjectDetail = () => {
                     to={`/projects/${otherProject.id}`}
                     className="group block"
                     data-prefetch-src={thumb}
+                    onMouseEnter={() => triggerHaptic('hover')}
+                    onClick={() => triggerHaptic('click')}
                   >
                     <div className="relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--glass-shadow)] transition-all duration-500 hover:shadow-[var(--glass-shadow-heavy)] hover:scale-[1.02]">
                       <div className="relative aspect-[16/10] overflow-hidden">

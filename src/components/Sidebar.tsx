@@ -4,8 +4,10 @@ import { ThemeContext } from '../context/ThemeProvider'
 import { Home, FolderOpen, User, Briefcase, Mail, Moon, Sun, Eye, EyeOff } from 'lucide-react'
 import LinkedIn from './icons/LinkedIn'
 import Instagram from './icons/Instagram'
+import { useHaptic } from '../hooks/useHaptic'
 
 const NavItem: React.FC<{ to: string; icon: React.ReactNode; children: React.ReactNode; collapsed?: boolean }> = ({ to, icon, children, collapsed }) => {
+  const { triggerHaptic } = useHaptic()
   const loc = useLocation()
   // Check if current path matches the nav item, or if we're on a sub-route (like /projects/dominos)
   const active = loc.pathname === to || (to !== '/' && loc.pathname.startsWith(to + '/'))
@@ -23,6 +25,8 @@ const NavItem: React.FC<{ to: string; icon: React.ReactNode; children: React.Rea
       to={to}
       className={className}
       style={{ color: collapsed ? '#fff' : 'var(--text-nav)' }}
+      onMouseEnter={() => triggerHaptic('hover')}
+      onClick={() => triggerHaptic('click')}
     >
       <span className="w-6 h-6 flex items-center justify-center text-[18px] opacity-90" style={{ color: 'var(--text-nav)' }}>{icon}</span>
       <span className="text-sm nav-label flex items-center gap-2" style={{ color: 'var(--text-nav)' }}>
@@ -42,6 +46,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
+  const { triggerHaptic } = useHaptic()
   const { theme, toggle, spotlightOn, toggleSpotlight } = useContext(ThemeContext)
 
   return (
@@ -51,12 +56,28 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
     >
       <div>
   <div className={`flex items-center gap-3 mb-6 px-2 sidebar-header ${collapsed ? 'relative' : ''}`}>
-          <Link to="/" className={`text-2xl font-bold sidebar-title ${collapsed ? 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : ''}`} style={{ color: 'var(--text-nav)' }}>A.F.</Link>
+          <Link
+            to="/"
+            className={`text-2xl font-bold sidebar-title ${collapsed ? 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : ''}`}
+            style={{ color: 'var(--text-nav)' }}
+            onClick={() => {
+              try {
+                const main = document.querySelector('.main-content') as HTMLElement | null
+                if (main && typeof main.scrollTo === 'function') main.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+              } catch {}
+            }}
+          >
+            A.F.
+          </Link>
 
             {collapsed ? (
             <div style={{ position: 'absolute', left: 'calc(100% + 36px)', top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: 8 }}>
               <button
-                onClick={() => onCollapsedChange(!collapsed)}
+                onClick={() => {
+                  triggerHaptic('click')
+                  onCollapsedChange(!collapsed)
+                }}
                 aria-label="Collapse sidebar"
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
                 style={{ color: 'var(--text-nav)' }}
@@ -65,7 +86,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
               </button>
 
               <button
-                onClick={() => toggleSpotlight && toggleSpotlight()}
+                onClick={() => {
+                  triggerHaptic('click')
+                  toggleSpotlight && toggleSpotlight()
+                }}
                 aria-label="Toggle spotlight"
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
                 style={{ color: 'var(--text-nav)' }}
@@ -74,7 +98,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
               </button>
 
               <button
-                onClick={toggle}
+                onClick={() => {
+                  triggerHaptic('click')
+                  toggle()
+                }}
                 aria-label="Toggle theme"
                 className="w-8 h-8 rounded-full flex items-center justify-center"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-nav)' }}
@@ -85,7 +112,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
           ) : (
             <div className="ml-auto flex items-center gap-2">
               <button
-                onClick={() => onCollapsedChange(!collapsed)}
+                onClick={() => {
+                  triggerHaptic('click')
+                  onCollapsedChange(!collapsed)
+                }}
                 aria-label="Collapse sidebar"
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
                 style={{ color: 'var(--text-nav)' }}
@@ -93,7 +123,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
                 {collapsed ? '»' : '«'}
               </button>
               <button
-                onClick={() => toggleSpotlight && toggleSpotlight()}
+                onClick={() => {
+                  triggerHaptic('click')
+                  toggleSpotlight && toggleSpotlight()
+                }}
                 aria-label="Toggle spotlight"
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
                 style={{ color: 'var(--text-nav)' }}
@@ -102,7 +135,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
               </button>
 
               <button
-                onClick={toggle}
+                onClick={() => {
+                  triggerHaptic('click')
+                  toggle()
+                }}
                 aria-label="Toggle theme"
                 className="w-8 h-8 rounded-full flex items-center justify-center"
                 style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-nav)' }}
@@ -132,10 +168,24 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
           </div>
         </div>
         <div className="flex gap-4 px-1 social-icons" style={{ color: 'var(--muted)' }}>
-          <a href="https://www.linkedin.com/in/lex-ferguson-3056a3275/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+          <a 
+            href="https://www.linkedin.com/in/lex-ferguson-3056a3275/" 
+            target="_blank" 
+            rel="noreferrer" 
+            className="hover:text-white transition-colors"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('click')}
+          >
             <LinkedIn className="w-4 h-4" />
           </a>
-          <a href="https://www.instagram.com/lexfergusonn/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+          <a 
+            href="https://www.instagram.com/lexfergusonn/" 
+            target="_blank" 
+            rel="noreferrer" 
+            className="hover:text-white transition-colors"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('click')}
+          >
             <Instagram className="w-4 h-4" />
           </a>
         </div>

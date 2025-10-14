@@ -4,8 +4,10 @@ import { projects } from '../data/projects'
 import { useState } from 'react'
 import TiltCard from '../components/TiltCard'
 import Media from '../components/Media'
+import { useHaptic } from '../hooks/useHaptic'
 
 const Projects = () => {
+  const { triggerHaptic } = useHaptic()
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredProjects = projects.filter(project => 
@@ -67,7 +69,12 @@ const Projects = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
               >
-                <Link to={`/projects/${project.id}`} className="group block">
+                <Link 
+                  to={`/projects/${project.id}`} 
+                  className="group block"
+                  onMouseEnter={() => triggerHaptic('hover')}
+                  onClick={() => triggerHaptic('click')}
+                >
                   <TiltCard>
                     <div className="relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--glass-shadow)] transition-all duration-500 hover:shadow-[var(--glass-shadow-heavy)] project-glass-hover">
                     {/* Image Container */}

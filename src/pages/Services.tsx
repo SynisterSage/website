@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import TiltCard from '../components/TiltCard'
+import { useHaptic } from '../hooks/useHaptic'
 
 type Service = {
   id: string
@@ -92,13 +93,20 @@ const FAQS: FAQ[] = [
 ]
 
 const Services = () => {
+  const { triggerHaptic } = useHaptic()
   const [openId, setOpenId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [needsReadMore, setNeedsReadMore] = useState<Record<string, boolean>>({})
   const descRefs = useRef<Record<string, HTMLParagraphElement | null>>({})
 
-  const toggle = (id: string) => setOpenId((cur) => (cur === id ? null : id))
-  const toggleExpand = (id: string) => setExpandedId((cur) => (cur === id ? null : id))
+  const toggle = (id: string) => {
+    triggerHaptic('click')
+    setOpenId((cur) => (cur === id ? null : id))
+  }
+  const toggleExpand = (id: string) => {
+    triggerHaptic('click')
+    setExpandedId((cur) => (cur === id ? null : id))
+  }
 
   // Check if text is truncated after mount and on resize
   useEffect(() => {
@@ -180,7 +188,12 @@ const Services = () => {
                           </button>
                         )}
 
-                        <Link to="/contact" className="btn-primary ml-auto">
+                        <Link 
+                          to="/contact" 
+                          className="btn-primary ml-auto"
+                          onMouseEnter={() => triggerHaptic('hover')}
+                          onClick={() => triggerHaptic('button')}
+                        >
                           {service.cta}
                         </Link>
                       </div>
@@ -253,7 +266,12 @@ const Services = () => {
         </section>
 
         <div className="mt-8 w-full">
-          <Link to="/contact" className="btn-primary w-full justify-center text-center">
+          <Link 
+            to="/contact" 
+            className="btn-primary w-full justify-center text-center"
+            onMouseEnter={() => triggerHaptic('hover')}
+            onClick={() => triggerHaptic('button')}
+          >
             Get in Touch
           </Link>
         </div>

@@ -112,7 +112,38 @@
 
   /* allow horizontal scrolling when necessary (user can optionally scroll left/right) */
   html, body, #root {
+    /* make sure the root/html layer uses the same theme-aware background as the body
+       so when the page is scrolled or the centered content doesn't fill the viewport
+       the area behind always matches the active theme (no white stripe). */
+    min-height: 100%;
+    height: 100%;
+    margin: 0;
     overflow-x: auto;
+    /* Make background rules explicit and higher priority to avoid white gaps */
+    background-color: var(--bg) !important;
+    background-image: linear-gradient(135deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 92%, var(--accent) 8%) 100%) !important;
+    background-attachment: fixed !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+  }
+
+  /* Extra safety: force html/body to use the theme background color, remove margins,
+     and ensure root and its immediate child fill the viewport height. This prevents
+     small white strips from appearing in some browsers when the layout doesn't
+     occupy the full viewport. */
+  html, body {
+    background-color: var(--bg) !important;
+    margin: 0 !important;
+    height: 100% !important;
+  }
+
+  #root {
+    min-height: 100vh !important;
+  }
+
+  /* Sometimes an app mounts a top-level wrapper under #root; make sure it fills too */
+  #root > * {
+    min-height: 100vh !important;
   }
 
   /* Light theme */
@@ -135,6 +166,9 @@
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
     --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.04);
     --glass-shadow-heavy: 0 12px 48px rgba(0, 0, 0, 0.08);
+    /* Selection colors for light mode */
+    --selection-bg: color-mix(in srgb, var(--accent) 65%, white 35%);
+    --selection-color: #ffffff;
   }
 
   /* Dark theme */
@@ -157,23 +191,47 @@
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
     --glass-shadow-heavy: 0 12px 48px rgba(0, 0, 0, 0.6);
+    /* Selection colors for dark mode */
+    --selection-bg: color-mix(in srgb, var(--accent) 65%, black 15%);
+    --selection-color: #ffffff;
   }
 
   body {
-    background: linear-gradient(135deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 92%, var(--accent) 8%) 100%);
-    background-attachment: fixed;
+    /* body inherits the theme variables; keep color and ensure no default margin */
     color: var(--text);
+    margin: 0;
   }
 
-  #root {
-    background-color: transparent;
-  }
+/* Make text selection use the brand accent and respect theme variables */
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-color);
+}
+::-moz-selection {
+  background: var(--selection-bg);
+  color: var(--selection-color);
+}
+
+  /* #root is covered above in the unified rule. */
 
   /* Make sure page containers are transparent so the body background shows through
      when scrolling beyond the centered content. This prevents showing a flat white
      area on tall pages. */
   .main-content, .content-column, .projects-frame, .project-card, .page-pad {
     background-color: transparent !important;
+  }
+
+  /* Slight visual nudge: push primary page containers down by a few pixels to improve spacing
+     without affecting layout or scroll behavior. This uses transform (no reflow) so it stays
+     performant and won't affect document flow (only visual offset). */
+  /* Don't apply the visual nudge to elements that are fixed/fullscreen (e.g. the splash overlay)
+     because transforming those creates a new stacking context and can break fixed positioning.
+     Use a small margin-top instead — it nudges layout without creating a new stacking context. */
+  .main-content > *:not(.fixed),
+  .content-column > *:not(.fixed),
+  .projects-frame > *:not(.fixed),
+  .page-pad > *:not(.fixed) {
+    margin-top: 4px;
   }
 
   /* helper components */
@@ -377,8 +435,11 @@
   }
 
   /* Only enable the spotlight on non-touch/fine-pointer devices and larger screens */
+  /* On small screens or coarse pointers we hide the interactive spotlight, but keep the subtle grid background visible. */
   @media (max-width: 1199px), (pointer: coarse) {
     .grid-spotlight { display: none !important; }
+    /* keep the grid lines background present; the ::before overlay will adapt to full width in the mobile rule below */
+    .main-content::before { opacity: 1; }
   }
 
   /* Highlight actual grid lines in a small radius around the cursor. This element
@@ -424,9 +485,11 @@
     width: calc(100% - 72px);
   }
 
-  /* Hide the line-highlight on small/coarse devices (no pointer hover) */
+  /* Hide the line-highlight on small/coarse devices (no pointer hover), but keep the base grid visible */
   @media (max-width: 1199px), (pointer: coarse) {
     .grid-lines-highlight { display: none !important; }
+    /* ensure the base grid overlay remains visible on mobile/tablet */
+    .main-content::before { opacity: 1; }
   }
 
   /* Mobile: sidebar hidden — overlay should cover full width */

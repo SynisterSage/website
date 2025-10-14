@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import TiltCard from '../components/TiltCard'
+import { useHaptic } from '../hooks/useHaptic'
 
 type WorkItem = {
   id: string
@@ -65,9 +66,13 @@ const WORK: WorkItem[] = [
 ]
 
 const About = () => {
+  const { triggerHaptic } = useHaptic()
   const [openId, setOpenId] = useState<string | null>(null)
 
-  const toggle = (id: string) => setOpenId((cur) => (cur === id ? null : id))
+  const toggle = (id: string) => {
+    triggerHaptic('click')
+    setOpenId((cur) => (cur === id ? null : id))
+  }
 
   return (
     <motion.main
@@ -267,7 +272,14 @@ const About = () => {
             </div>
 
           <div className="mt-6 w-full">
-            <Link to="/contact" className="btn-primary w-full justify-center text-center">Get in Touch</Link>
+            <Link 
+              to="/contact" 
+              className="btn-primary w-full justify-center text-center"
+              onMouseEnter={() => triggerHaptic('hover')}
+              onClick={() => triggerHaptic('button')}
+            >
+              Get in Touch
+            </Link>
           </div>
         </section>
       </div>

@@ -4,8 +4,10 @@ import LinkedIn from '../components/icons/LinkedIn'
 import Instagram from '../components/icons/Instagram'
 import SITE from '../data/site'
 import Toast from '../components/Toast'
+import { useHaptic } from '../hooks/useHaptic'
 
 const Contact = () => {
+  const { triggerHaptic } = useHaptic()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,6 +22,9 @@ const Contact = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Trigger success haptic
+    triggerHaptic('success')
     
     // Build a nicely formatted email body
     const emailLines = [
@@ -203,6 +208,8 @@ const Contact = () => {
                 <button
                   type="submit"
                   className="px-8 py-4 bg-accent text-white rounded-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+                  onMouseEnter={() => triggerHaptic('hover')}
+                  onClick={() => triggerHaptic('button')}
                 >
                   Get In Touch
                 </button>
@@ -210,7 +217,9 @@ const Contact = () => {
                 <a
                   href={`mailto:${SITE.email}?subject=${encodeURIComponent('Website inquiry')}&body=${encodeURIComponent('Hi Lex,%0D%0A%0D%0AI\'d like to discuss a project...')}`}
                   className="btn-secondary"
+                  onMouseEnter={() => triggerHaptic('hover')}
                   onClick={() => {
+                    triggerHaptic('click')
                     setToastOpen(true)
                     setTimeout(() => setToastOpen(false), 3500)
                   }}
@@ -237,10 +246,26 @@ const Contact = () => {
 
               <div className="text-sm text-[var(--muted)] mb-2">Follow Me</div>
               <div className="flex items-center gap-4">
-                <a href="https://www.linkedin.com/in/lex-ferguson-3056a3275/" aria-label="LinkedIn" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                <a 
+                  href="https://www.linkedin.com/in/lex-ferguson-3056a3275/" 
+                  aria-label="LinkedIn" 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="hover:text-white transition-colors"
+                  onMouseEnter={() => triggerHaptic('hover')}
+                  onClick={() => triggerHaptic('click')}
+                >
                   <LinkedIn className="w-4 h-4" />
                 </a>
-                <a href="https://www.instagram.com/lexfergusonn/" aria-label="Instagram" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                <a 
+                  href="https://www.instagram.com/lexfergusonn/" 
+                  aria-label="Instagram" 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="hover:text-white transition-colors"
+                  onMouseEnter={() => triggerHaptic('hover')}
+                  onClick={() => triggerHaptic('click')}
+                >
                   <Instagram className="w-4 h-4" />
                 </a>
               </div>

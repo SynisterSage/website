@@ -1,26 +1,25 @@
-import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import LogoPreloader from '../components/LogoPreloader'
+import { useNavigate } from 'react-router-dom';
+import ProgressBarLoader from '../components/ProgressBarLoader';
+import { Suspense } from 'react';
 
 export default function Splash() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
-    <motion.main
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen page-pad flex items-center justify-center"
-    >
-      <LogoPreloader
-        duration={3800}
-        onComplete={() => {
-          // Navigate back to home after the preloader finishes. We intentionally
-          // do not set a cookie so the preloader will run on every fresh navigation
-          // (opening the site), but our StartupRedirect logic prevents it on reloads.
-          navigate('/', { replace: true })
-        }}
-      />
-    </motion.main>
-  )
+    <div className="fixed inset-0 w-full h-full overflow-hidden">
+      <Suspense fallback={null}>
+        <ProgressBarLoader
+          duration={3500}
+          onComplete={() => {
+            try {
+              sessionStorage.setItem('splashShown', '1')
+            } catch (e) {
+              /* ignore */
+            }
+            setTimeout(() => navigate('/', { replace: true }), 120);
+          }}
+        />
+      </Suspense>
+    </div>
+  );
 }
