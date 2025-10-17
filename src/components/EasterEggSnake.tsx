@@ -421,6 +421,58 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, gameOver, generateFood]);
 
+  // Touch/swipe controls for mobile
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (gameOver) return;
+      
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      const minSwipeDistance = 30; // Minimum swipe distance in pixels
+      
+      // Determine swipe direction
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+        // Horizontal swipe
+        const newDirection = deltaX > 0 ? 'RIGHT' : 'LEFT';
+        const opposite = { LEFT: 'RIGHT', RIGHT: 'LEFT', UP: 'DOWN', DOWN: 'UP' };
+        if (opposite[newDirection] !== direction.current) {
+          nextDirection.current = newDirection;
+        }
+      } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > minSwipeDistance) {
+        // Vertical swipe
+        const newDirection = deltaY > 0 ? 'DOWN' : 'UP';
+        const opposite = { LEFT: 'RIGHT', RIGHT: 'LEFT', UP: 'DOWN', DOWN: 'UP' };
+        if (opposite[newDirection] !== direction.current) {
+          nextDirection.current = newDirection;
+        }
+      }
+    };
+
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.addEventListener('touchstart', handleTouchStart);
+      canvas.addEventListener('touchend', handleTouchEnd);
+      
+      return () => {
+        canvas.removeEventListener('touchstart', handleTouchStart);
+        canvas.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [gameOver]);
+
   // Start game loop
   useEffect(() => {
     gameAudio.gameStart();
@@ -705,8 +757,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
 
           {/* Controls hint */}
           <div className="text-center mt-4 text-[10px] sm:text-xs" style={{ color: 'var(--muted)', paddingTop: '2px' }}>
-            <div className="mb-1">Arrow Keys or WASD to move</div>
-            <div>SPACE to pause • ESC to exit</div>
+            <div className="mb-1 hidden sm:block">Arrow Keys or WASD to move</div>
+            <div className="mb-1 sm:hidden">Swipe to move</div>
+            <div className="hidden sm:block">SPACE to pause • ESC to exit</div>
+            <div className="sm:hidden">Tap outside to exit</div>
           </div>
         </motion.div>
       </motion.div>
