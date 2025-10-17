@@ -599,7 +599,8 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                     </button>
                   )}
                   <div className="text-xs" style={{ color: 'var(--muted)' }}>
-                    Press SPACE to restart
+                    <span className="hidden sm:inline">Press SPACE to restart</span>
+                    <span className="sm:hidden">Tap to restart</span>
                   </div>
                 </div>
               </motion.div>
@@ -638,8 +639,8 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                     className="w-full px-3 py-2 rounded-lg mb-3 text-sm"
                     style={{
                       background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: 'var(--text)',
+                      border: '1px solid rgba(136, 120, 238, 0.3)',
+                      color: 'var(--accent)',
                       outline: 'none',
                     }}
                   />
