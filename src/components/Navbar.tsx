@@ -1,13 +1,18 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Menu, X, Moon, Sun, Home as HomeIcon, FolderOpen, Mail as MailIcon, User, Briefcase } from 'lucide-react'
 import { ThemeContext } from '../context/ThemeProvider'
 import { useHaptic } from '../hooks/useHaptic'
 
-const Navbar = () => {
+const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => {
   const { triggerHaptic } = useHaptic()
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Easter egg: track rapid clicks
+  const [clickCount, setClickCount] = useState(0)
+  const [showHint, setShowHint] = useState(false)
+  const clickTimeoutRef = useRef<number | null>(null)
 
   const menuVariants = {
     open: { opacity: 1, y: 0, transition: { stiffness: 200 } },
@@ -24,6 +29,32 @@ const Navbar = () => {
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     triggerHaptic('click')
     setIsOpen(false)
+    
+    // Easter egg click tracking
+    const newCount = clickCount + 1
+    setClickCount(newCount)
+    
+    // Clear previous timeout
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current)
+    }
+    
+    // Check if user clicked 5 times (trigger Easter egg)
+    if (newCount >= 5) {
+      setClickCount(0)
+      setShowHint(false)
+      if (onEasterEggTrigger) {
+        onEasterEggTrigger()
+        e.preventDefault()
+        return
+      }
+    }
+    
+    // Reset click count after 2 seconds
+    clickTimeoutRef.current = window.setTimeout(() => {
+      setClickCount(0)
+    }, 2000)
+    
     // If already on home page, scroll to top instead of navigating
     if (loc.pathname === '/') {
       e.preventDefault()
@@ -46,10 +77,22 @@ const Navbar = () => {
           <Link
             to="/"
             onClick={handleLogoClick}
-            className="text-2xl font-bold brand-link"
+            onMouseEnter={() => setShowHint(true)}
+            onMouseLeave={() => setShowHint(false)}
+            className="text-2xl font-bold brand-link relative group"
             style={{ color: 'var(--text-nav)' }}
+            title="Click fast for easter egg"
           >
             A.F.
+            {/* Subtle hover hint */}
+            {showHint && (
+              <span
+                className="absolute -bottom-5 left-0 text-[9px] whitespace-nowrap opacity-40 pointer-events-none"
+                style={{ color: 'var(--muted)' }}
+              >
+                click fast for easter egg
+              </span>
+            )}
           </Link>
           <div className="text-sm sidebar-subtitle" style={{ color: 'var(--muted)' }}>Designer</div>
         </div>

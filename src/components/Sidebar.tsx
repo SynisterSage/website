@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ThemeContext } from '../context/ThemeProvider'
 import { Home, FolderOpen, User, Briefcase, Mail, Moon, Sun, Eye, EyeOff } from 'lucide-react'
@@ -43,15 +43,45 @@ const NavItem: React.FC<{ to: string; icon: React.ReactNode; children: React.Rea
 interface SidebarProps {
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
+  onEasterEggTrigger?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange, onEasterEggTrigger }) => {
   const { triggerHaptic } = useHaptic()
   const { theme, toggle, spotlightOn, toggleSpotlight } = useContext(ThemeContext)
   const location = useLocation()
+  
+  // Easter egg: track rapid clicks
+  const [clickCount, setClickCount] = useState(0)
+  const clickTimeoutRef = useRef<number | null>(null)
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     triggerHaptic('click')
+    
+    // Easter egg click tracking
+    const newCount = clickCount + 1
+    setClickCount(newCount)
+    
+    // Clear previous timeout
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current)
+    }
+    
+    // Check if user clicked 5 times (trigger Easter egg)
+    if (newCount >= 5) {
+      setClickCount(0)
+      if (onEasterEggTrigger) {
+        onEasterEggTrigger()
+        e.preventDefault()
+        return
+      }
+    }
+    
+    // Reset click count after 2 seconds
+    clickTimeoutRef.current = window.setTimeout(() => {
+      setClickCount(0)
+    }, 2000)
+    
     // If already on home page, scroll to top instead of navigating
     if (location.pathname === '/') {
       e.preventDefault()

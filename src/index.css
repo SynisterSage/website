@@ -78,7 +78,7 @@
 .footer-main {
   box-sizing: border-box;
   margin-left: var(--sidebar-width, 18rem);
-  padding-left: 24px;
+  padding-left: 16px; /* Reduced from 24px to match main-content */
   padding-right: 24px;
   padding-top: 12px;
   padding-bottom: 12px;
@@ -1062,7 +1062,7 @@
     .main-content {
       /* Reserve space for sidebar, content sits right next to it with small gutter */
       margin-left: var(--sidebar-width, 18rem);
-      padding-left: 32px;
+      padding-left: 16px; /* Reduced from 32px to move content left */
       padding-right: 48px; /* More padding on right so content doesn't hug edge */
       padding-top: 80px; /* Move content further down from toggle button */
       box-sizing: border-box;
@@ -1598,7 +1598,7 @@
   /* Small screens: make sure the content has comfortable side padding */
   @media (max-width: 1199px) {
     .content-column {
-      padding-left: 1.5rem;
+      padding-left: 1.25rem; /* Reduced from 1.5rem to move content left */
       padding-right: 1.5rem;
       max-width: 100%;
     }
@@ -1616,7 +1616,7 @@
   /* Mobile-specific adjustments */
   @media (max-width: 809px) {
     .content-column {
-      padding-left: 1rem;
+      padding-left: 0.875rem; /* Reduced from 1rem to move content left */
       padding-right: 1rem;
     }
     

@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar'
 import GridSpotlight from './components/GridSpotlight'
 import HapticToggle from './components/HapticToggle'
 import PreferencesNotice from './components/PreferencesNotice'
+import EasterEggSnake from './components/EasterEggSnake'
 import { initGA, logPageView } from './utils/analytics'
 
 // Lazy load route components for code splitting and faster initial load
@@ -25,6 +26,9 @@ function App() {
     const saved = localStorage.getItem('sidebarCollapsed')
     return saved === '1'
   })
+  
+  // Easter egg game state
+  const [showEasterEgg, setShowEasterEgg] = useState(false)
   
   // Persist sidebar state to localStorage
   useEffect(() => {
@@ -139,8 +143,12 @@ function App() {
 
     return (
       <>
-        <Navbar />
-        <Sidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
+        <Navbar onEasterEggTrigger={() => setShowEasterEgg(true)} />
+        <Sidebar 
+          collapsed={sidebarCollapsed} 
+          onCollapsedChange={setSidebarCollapsed}
+          onEasterEggTrigger={() => setShowEasterEgg(true)}
+        />
       </>
     )
   }
@@ -193,6 +201,9 @@ function App() {
         <LayoutFooter />
         <HapticToggle />
         <PreferencesNotice />
+        
+        {/* Easter egg game */}
+        {showEasterEgg && <EasterEggSnake onClose={() => setShowEasterEgg(false)} />}
       </div>
     </Router>
   )
