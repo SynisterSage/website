@@ -32,11 +32,11 @@ const Projects = () => {
         </motion.h1>
 
         {/* Search Bar */}
-        <motion.div
+        <motion.div 
+          className="mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8"
         >
           <div className="relative max-w-sm">
             <input

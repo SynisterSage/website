@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import TiltCard from '../components/TiltCard'
 import { useHaptic } from '../hooks/useHaptic'
+import { projects } from '../data/projects'
 
 type WorkItem = {
   id: string
@@ -84,17 +85,40 @@ const About = () => {
   <div className="content-column about-page mb-6">
         {/* Available pill intentionally hidden on About page */}
 
-        <h1 className="text-5xl font-semibold text-accent mb-4">About</h1>
-        <h2 className="text-xl text-gray-600 mb-6">Hello — I’m Alexander (A.F.)</h2>
+        <motion.h1 
+          className="text-5xl font-semibold text-accent mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          About
+        </motion.h1>
+        <motion.h2 
+          className="text-xl text-gray-600 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          Hello — I'm Alexander (A.F.)
+        </motion.h2>
 
-        <p className="text-lg max-w-3xl mb-6 leading-relaxed">
-          I’m a web and product designer who blends visual craft with front-end
+        <motion.p 
+          className="text-lg max-w-3xl mb-6 leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          I'm a web and product designer who blends visual craft with front-end
           implementation. I study graphic design and interactivity, and I focus on
-          UI systems, clear motion, and accessible experiences. I’ve worked on
+          UI systems, clear motion, and accessible experiences. I've worked on
           websites, apps, and brand systems for clients and personal projects since 2016.
-        </p>
+        </motion.p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           <TiltCard>
             <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] h-full">
               <h3 className="text-sm text-[var(--muted)] mb-2">Based In</h3>
@@ -112,14 +136,19 @@ const About = () => {
           <TiltCard>
             <div className="p-6 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--glass-border)] h-full">
               <h3 className="text-sm text-[var(--muted)] mb-2">Projects</h3>
-              <div className="text-lg font-semibold">20+</div>
+              <div className="text-lg font-semibold">{projects.length}{projects.length > 20 ? '+' : ''}</div>
             </div>
           </TiltCard>
-        </div>
+        </motion.div>
 
   <div className="w-full h-[1px] my-6 border-t dotted-line" />
 
-  <section className="mb-6">
+  <motion.section 
+          className="mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
           <h3 className="text-2xl font-semibold text-accent mb-4">Work & Experience</h3>
 
           <div className="space-y-4">
@@ -183,11 +212,16 @@ const About = () => {
               )
             })}
           </div>
-        </section>
+        </motion.section>
 
   <div className="w-full h-[1px] my-6 border-t dotted-line" />
 
-        <section className="mb-8">
+        <motion.section 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           <h4 className="text-[28px] text-accent font-semibold mb-4">My Stack</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 stack-grid w-full">
             <div className="flex items-center gap-3 stack-item rounded-xl p-3">
@@ -281,7 +315,7 @@ const About = () => {
               Get in Touch
             </Link>
           </div>
-        </section>
+        </motion.section>
       </div>
     </motion.main>
   )

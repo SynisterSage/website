@@ -48,6 +48,23 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
   const { triggerHaptic } = useHaptic()
   const { theme, toggle, spotlightOn, toggleSpotlight } = useContext(ThemeContext)
+  const location = useLocation()
+
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    triggerHaptic('click')
+    // If already on home page, scroll to top instead of navigating
+    if (location.pathname === '/') {
+      e.preventDefault()
+      try {
+        const main = document.querySelector('.main-content') as HTMLElement | null
+        if (main && typeof main.scrollTo === 'function') {
+          main.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+        }
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      } catch {}
+    }
+    // Otherwise let the Link navigate normally (it will scroll to top via ScrollToTop component)
+  }
 
   return (
     <aside
@@ -60,13 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange }) => {
             to="/"
             className={`text-2xl font-bold sidebar-title ${collapsed ? 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : ''}`}
             style={{ color: 'var(--text-nav)' }}
-            onClick={() => {
-              try {
-                const main = document.querySelector('.main-content') as HTMLElement | null
-                if (main && typeof main.scrollTo === 'function') main.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-              } catch {}
-            }}
+            onClick={handleLogoClick}
           >
             A.F.
           </Link>

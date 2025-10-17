@@ -142,6 +142,68 @@
 /* Slightly tighter spacing across sections for visual balance */
 .content-column { gap: 0.5rem; }
 
+/* Utility: allow pages to center the content column regardless of sidebar state */
+.content-column.centered,
+.has-expanded-sidebar .content-column.centered,
+.has-collapsed-sidebar .content-column.centered {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* === FIX: Prevent expanded cards/panels from causing horizontal overflow === */
+
+/* Ensure all inner panels respect parent width and don't force horizontal growth */
+.content-column > * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Work/Experience cards: prevent expanded content from pushing parent width */
+.content-column .space-y-4 > * {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* TiltCard components should never cause overflow */
+.content-column .rounded-2xl {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Ensure text inside expanded panels wraps properly */
+.content-column .px-6,
+.content-column .pb-6,
+.content-column .p-6 {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* About page specific: ensure stat cards grid doesn't overflow */
+.about-page .grid {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* === FIX: Make About page container expand to full width when sidebar collapsed === */
+
+/* When sidebar is collapsed, About page should fill remaining viewport width just like other pages */
+.has-collapsed-sidebar .main-content .about-page {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Also ensure the parent motion.main respects full width */
+.has-collapsed-sidebar .main-content > .page-pad {
+  max-width: none !important;
+  width: 100% !important;
+}
+
 
   /* allow horizontal scrolling when necessary (user can optionally scroll left/right) */
   html, body, #root {
@@ -151,7 +213,7 @@
     min-height: 100%;
     height: 100%;
     margin: 0;
-    overflow-x: auto;
+    overflow-x: hidden; /* CHANGED: prevent horizontal scroll/overflow */
     /* Make background rules explicit and higher priority to avoid white gaps */
     background-color: var(--bg) !important;
     background-image: linear-gradient(135deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 92%, var(--accent) 8%) 100%) !important;
@@ -621,13 +683,26 @@
     box-shadow: var(--glass-shadow-sm);
   }
 
+  /* Make loader text more visible in both light and dark modes */
+  .progress-loader-container .text-sm,
+  .progress-loader-container .text-xs {
+    color: var(--text) !important;
+    opacity: 0.9;
+    font-weight: 500;
+  }
+
+  /* Make percentage stand out more */
+  .progress-loader-container .text-xs:last-child {
+    font-weight: 600;
+  }
+
   .glass-hint-row {
     align-items: center;
     gap: 8px;
   }
 
-  /* Loader hint text: unified instruction for all devices */
-  .loader-hint::before { content: 'Hold to skip'; }
+  /* Loader hint text now provided directly in the DOM for accessibility. */
+  /* Intentionally no ::before content here to avoid duplicate text. */
 
 
   @supports (backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px)) {
@@ -1147,20 +1222,12 @@
         max-width: calc(100vw - 72px - 96px) !important;
       }
 
-      /* Ensure resume page uses the wider centered max-width on large screens */
-      .resume-page {
-        max-width: min(1400px, calc(100vw - var(--sidebar-width, 18rem) - 96px)) !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-      }
-
-      /* Make the resume iframe expand to fill the centered column on large screens */
+      /* Resume iframe frame should respect content-column width */
       .resume-frame {
-        /* Center and cap the frame to a readable maximum to avoid clipping. */
-        margin-left: auto !important;
-        margin-right: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         width: 100% !important;
-        max-width: min(1400px, calc(100vw - var(--sidebar-width, 18rem) - 96px)) !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
       }
 
@@ -1170,22 +1237,6 @@
         height: 100% !important;
         display: block;
         border: 0 !important;
-      }
-
-      /* Make the resume iframe frame expand to match the centered content width */
-      .resume-frame {
-        /* duplicate guard to ensure consistent centering */
-        max-width: min(1400px, calc(100vw - var(--sidebar-width, 18rem) - 96px)) !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-      }
-
-      /* When sidebar collapsed, use the collapsed width in the calc */
-      .has-collapsed-sidebar .resume-frame {
-        max-width: min(1400px, calc(100vw - 72px - 96px)) !important;
-        width: 100% !important;
       }
     }
   }
@@ -1869,5 +1920,68 @@
 
 @media (prefers-reduced-motion: reduce) {
   .logo-svg path { transition: none !important; stroke-dashoffset: 0 !important }
+}
+
+/* 404 NotFound Page: Ensure container is properly centered regardless of sidebar state */
+.not-found-page {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+  padding-bottom: 28px !important;
+  padding-top: 0 !important;
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* When sidebar is expanded, add left margin to pull it back a bit */
+.has-expanded-sidebar .not-found-page {
+  margin-left: -170px !important;
+}
+
+/* Tablet breakpoint: reset margin for better centering */
+@media (max-width: 1199px) {
+  .not-found-page {
+    margin-left: 0 !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .has-expanded-sidebar .not-found-page {
+    margin-left: 0 !important;
+  }
+}
+
+/* Mobile breakpoint: ensure full centering on small screens */
+@media (max-width: 640px) {
+  .not-found-page {
+    margin-left: 0 !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Ensure text-center container centers properly within flex */
+.not-found-page > .text-center {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Resume Page: Keep iframe width consistent - don't shrink when sidebar expands */
+.has-expanded-sidebar .content-column [style*="height: 80vh"] {
+  max-width: 1120px !important;
+  width: 1120px !important;
+}
+
+/* Footer positioning: match the height of social icons on sidebar */
+.footer-main {
+  min-height: auto !important;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 24px !important;
 }
 

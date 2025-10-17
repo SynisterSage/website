@@ -98,7 +98,7 @@ const Contact = () => {
       className="min-h-screen page-pad"
     >
   <div className="content-column contact-page mb-6">
-        <motion.h1
+        <motion.h1 
           className="text-5xl font-semibold text-accent mb-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -106,7 +106,7 @@ const Contact = () => {
           Contact Me
         </motion.h1>
 
-        <motion.p
+        <motion.p 
           className="text-lg max-w-3xl mb-6 leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -121,7 +121,7 @@ const Contact = () => {
             <motion.form
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.15 }}
               onSubmit={handleSubmit}
               className="glass rounded-2xl p-8 space-y-6"
             >
@@ -240,7 +240,7 @@ const Contact = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
+              transition={{ delay: 0.2 }}
               className="glass rounded-2xl p-6"
             >
               <h3 className="text-xl font-semibold mb-2">Let's Connect</h3>

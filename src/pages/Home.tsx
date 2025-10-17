@@ -74,31 +74,55 @@ const Home = () => {
       className="min-h-screen page-pad"
     >
   <div className="content-column home-page mb-6">
-        <div className="mb-6">
+        <motion.div 
+          className="mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <Link to="/contact" className="available-pill" onMouseEnter={() => triggerHaptic('hover')} onClick={() => triggerHaptic('click')}>
             <span className="available-dot" aria-hidden="true"><span className="dot-core" /></span>
             Available for Work
           </Link>
-        </div>
+        </motion.div>
 
-        <h1
+        <motion.h1
           ref={nameRef}
           className="text-5xl font-semibold text-accent mb-4 home-name"
           onPointerMove={handleNamePointerMove}
           onPointerLeave={handleNamePointerLeave}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
         >
           {/* text content will be populated by effect (scramble -> reveal) */}
-        </h1>
-        <h2 className="text-xl text-gray-600 mb-6">Web & Visual Designer</h2>
+        </motion.h1>
+        <motion.h2 
+          className="text-xl text-gray-600 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          Web & Visual Designer
+        </motion.h2>
 
-        <p className="text-lg max-w-3xl mb-8">
+        <motion.p 
+          className="text-lg max-w-3xl mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           I've been designing brands and crafting digital experiences since 2016, while
           also studying graphic design and coding in college. This blend of creative and
           technical expertise shapes everything I create, ensuring each project is both
           visually engaging and functional.
-        </p>
+        </motion.p>
 
-        <div className="flex gap-4">
+        <motion.div 
+          className="flex gap-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
           <Link 
             to="/contact" 
             className="btn-primary"
@@ -115,11 +139,16 @@ const Home = () => {
           >
             View Resume
           </Link>
-        </div>
+        </motion.div>
 
         <div className="w-full h-[1px] my-12 border-t dotted-line" />
 
-  <div className="projects-header flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+  <motion.div 
+          className="projects-header flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           <h3 className="text-[28px] text-accent font-semibold break-words">Selected Projects</h3>
           <Link 
             to="/projects" 
@@ -130,9 +159,14 @@ const Home = () => {
           >
             All Projects
           </Link>
-        </div>
+        </motion.div>
 
-        <div className="projects-frame">
+        <motion.div 
+          className="projects-frame"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
           <div className="grid gap-4">
             {projects.slice(0,4).map((p, idx) => (
               <Link
@@ -160,13 +194,25 @@ const Home = () => {
               </Link>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         <div className="w-full h-[1px] my-12 border-t dotted-line" />
 
-        <h4 className="text-[28px] text-accent font-semibold mb-4">My Stack</h4>
+        <motion.h4 
+          className="text-[28px] text-accent font-semibold mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          My Stack
+        </motion.h4>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 stack-grid">
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 stack-grid"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+        >
           <div className="flex items-center gap-3 stack-item rounded-xl p-3">
             <div className="stack-icon">
               <img src="/icons/framer.svg" alt="Framer" className="w-8 h-8" />
@@ -246,7 +292,7 @@ const Home = () => {
               <div className="text-sm text-gray-600">Collaboration</div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.main>
   )

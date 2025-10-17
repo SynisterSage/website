@@ -6,6 +6,7 @@ import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import GridSpotlight from './components/GridSpotlight'
 import HapticToggle from './components/HapticToggle'
+import PreferencesNotice from './components/PreferencesNotice'
 import { initGA, logPageView } from './utils/analytics'
 
 // Lazy load route components for code splitting and faster initial load
@@ -16,9 +17,23 @@ const Contact = lazy(() => import('./pages/Contact'))
 const About = lazy(() => import('./pages/About'))
 const Services = lazy(() => import('./pages/Services'))
 const Resume = lazy(() => import('./pages/Resume'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 
 function App() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const saved = localStorage.getItem('sidebarCollapsed')
+    return saved === '1'
+  })
+  
+  // Persist sidebar state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('sidebarCollapsed', sidebarCollapsed ? '1' : '0')
+    } catch (e) {
+      // ignore
+    }
+  }, [sidebarCollapsed])
   
   // Initialize Google Analytics once on mount
   useEffect(() => {
@@ -169,6 +184,7 @@ function App() {
                 <Route path="/resume" element={<Resume />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </AnimatePresence>
@@ -176,6 +192,7 @@ function App() {
 
         <LayoutFooter />
         <HapticToggle />
+        <PreferencesNotice />
       </div>
     </Router>
   )

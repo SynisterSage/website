@@ -21,6 +21,23 @@ const Navbar = () => {
   // derived slug for mobile display when on a project detail route
   const projectSlug = loc.pathname.startsWith('/projects/') && loc.pathname !== '/projects' ? '/' + loc.pathname.replace('/projects/', '').split('/')[0] : ''
 
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    triggerHaptic('click')
+    setIsOpen(false)
+    // If already on home page, scroll to top instead of navigating
+    if (loc.pathname === '/') {
+      e.preventDefault()
+      try {
+        const main = document.querySelector('.main-content') as HTMLElement | null
+        if (main && typeof main.scrollTo === 'function') {
+          main.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+        }
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      } catch {}
+    }
+    // Otherwise let the Link navigate normally
+  }
+
   return (
     <nav className="fixed w-full z-60 px-6 py-3 mobile-nav glass" style={{ color: 'var(--mobile-text)' }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -28,15 +45,7 @@ const Navbar = () => {
         <div className="brand-stack">
           <Link
             to="/"
-            onClick={() => {
-              // always reset scroll to top when brand is clicked
-              try {
-                const main = document.querySelector('.main-content') as HTMLElement | null
-                if (main && typeof main.scrollTo === 'function') main.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-              } catch (err) {}
-              setIsOpen(false)
-            }}
+            onClick={handleLogoClick}
             className="text-2xl font-bold brand-link"
             style={{ color: 'var(--text-nav)' }}
           >

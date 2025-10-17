@@ -22,7 +22,17 @@ function useAccent() {
   return accent
 }
 
-export default function ProgressBarLoader({ duration = 3500, onComplete }: { duration?: number; onComplete?: () => void }) {
+type LoaderProps = {
+  duration?: number
+  onComplete?: () => void
+  assets?: string[] // list of asset URLs to preload (images only)
+}
+
+function isImageUrl(url: string) {
+  return /\.(png|jpe?g|gif|webp|svg)$/i.test(url)
+}
+
+export default function ProgressBarLoader({ duration = 3500, onComplete, assets = [] }: LoaderProps) {
   const { triggerHaptic } = useHaptic()
   const accent = useAccent()
   const [progress, setProgress] = useState(0)
@@ -31,6 +41,12 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
   const started = useRef(false)
   const fastRef = useRef({ multiplier: 1 })
   const holding = useRef(false)
+  const holdStart = useRef<number | null>(null)
+  const skipOverride = useRef(false)
+
+  // Asset preload state
+  const [assetCounts, setAssetCounts] = useState({ loaded: 0, total: 0 })
+  const filteredAssets = useMemo(() => (assets || []).filter(isImageUrl), [assets])
 
   useEffect(() => {
     // Kickoff animation and simulated progress. Supports fast-forward multiplier when holding.
@@ -43,7 +59,15 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
       const elapsed = (t - startTime) * fastRef.current.multiplier
       const pct = Math.min(1, elapsed / duration)
       const eased = 1 - Math.pow(1 - pct, 2) // easeOutQuad
-      setProgress(eased)
+
+      // Determine target gate based on asset loading progress
+      const assetGate = assetCounts.total > 0
+        ? 0.1 + 0.9 * (assetCounts.loaded / assetCounts.total)
+        : 1
+
+      // Visual progress is limited by both time and assets (unless user skip override)
+  let visual = skipOverride.current ? 1 : Math.min(eased, assetGate)
+      setProgress(visual)
 
       // step updates every ~ (duration / steps)
       const nextStep = Math.min(steps.length - 1, Math.floor(eased * steps.length))
@@ -52,7 +76,19 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
         triggerHaptic('hover')
       }
 
-      if (pct < 1) {
+      // When holding, allow skip override after a brief dwell
+      if (holding.current && holdStart.current != null && !skipOverride.current) {
+        if (t - holdStart.current > 500) {
+          skipOverride.current = true
+          triggerHaptic('selection')
+        }
+      }
+
+  const timeDone = pct >= 1
+  const assetsDone = assetCounts.total === 0 || assetCounts.loaded >= assetCounts.total
+  const canFinish = skipOverride.current || (timeDone && assetsDone)
+
+      if (!canFinish) {
         requestAnimationFrame(tick)
       } else {
         // complete
@@ -76,6 +112,7 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
       if (e.code === 'Space' && !spaceDown) {
         spaceDown = true
         holding.current = true
+        holdStart.current = performance.now()
         setFast(6) // much faster when holding space
       }
     }
@@ -84,17 +121,20 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
       if (e.code === 'Space') {
         spaceDown = false
         holding.current = false
+        holdStart.current = null
         resetFast()
       }
     }
 
     const onTouchStart = () => {
       holding.current = true
+      holdStart.current = performance.now()
       setFast(5)
     }
 
     const onTouchEnd = () => {
       holding.current = false
+      holdStart.current = null
       resetFast()
     }
 
@@ -110,6 +150,30 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
       window.removeEventListener('touchend', onTouchEnd)
     }
   }, [])
+
+  // Asset preloading effect
+  useEffect(() => {
+    if (!filteredAssets.length) return
+    // initialize counts
+    setAssetCounts({ loaded: 0, total: filteredAssets.length })
+
+    let cancelled = false
+    filteredAssets.forEach((src) => {
+      const img = new Image()
+      const done = () => {
+        if (cancelled) return
+        setAssetCounts((s) => ({ ...s, loaded: Math.min(s.loaded + 1, s.total) }))
+      }
+      img.onload = done
+      img.onerror = done
+      // Ensure absolute path works under dev/prod
+      img.decoding = 'async'
+      img.loading = 'eager'
+      img.src = src
+    })
+
+    return () => { cancelled = true }
+  }, [filteredAssets.join('|')])
 
   const containerStyle: React.CSSProperties = useMemo(() => ({
     position: 'fixed', inset: 0, display: 'grid', placeItems: 'center', zIndex: 9999,
@@ -139,10 +203,7 @@ export default function ProgressBarLoader({ duration = 3500, onComplete }: { dur
             </div>
             <div className="mt-3 flex items-center justify-between glass-hint-row">
               <div className="text-xs tracking-wide text-[color:var(--muted)]">Loading experience</div>
-              <div className="text-xs text-[color:var(--muted)] loader-hint" aria-live="polite">
-                {/* accessible hint; text changes based on pointer type via JS/CSS */}
-                Hold to skip
-              </div>
+              <div className="text-xs text-[color:var(--muted)] loader-hint" aria-live="polite">Hold to skip</div>
             </div>
           </div>
         </div>

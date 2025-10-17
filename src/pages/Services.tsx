@@ -143,17 +143,40 @@ const Services = () => {
   <div className="content-column services-page mb-6">
         {/* Available pill intentionally hidden on Services page */}
 
-        <h1 className="text-5xl font-semibold text-accent mb-4">My Services</h1>
-        <h2 className="text-xl text-gray-600 mb-6">Curated offerings to bring your vision to life</h2>
+        <motion.h1 
+          className="text-5xl font-semibold text-accent mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          My Services
+        </motion.h1>
+        <motion.h2 
+          className="text-xl text-gray-600 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          Curated offerings to bring your vision to life
+        </motion.h2>
 
-        <p className="text-lg max-w-3xl mb-6 leading-relaxed">
+        <motion.p 
+          className="text-lg max-w-3xl mb-6 leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
           I provide design and development services tailored to help individuals and teams ship meaningful products.
           Each offering is scoped to flex with your project size and goals.
-        </p>
+        </motion.p>
 
   <div className="w-full h-[1px] my-6 border-t dotted-line" />
 
-  <section className="mb-6">
+  <motion.section 
+          className="mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {SERVICES.map((service) => {
               const isExpanded = expandedId === service.id
@@ -203,11 +226,16 @@ const Services = () => {
               )
             })}
           </div>
-        </section>
+        </motion.section>
 
   <div className="w-full h-[1px] my-6 border-t dotted-line" />
 
-  <section className="mb-6">
+  <motion.section 
+          className="mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
           <h3 className="text-[28px] text-accent font-semibold mb-6">Frequently Asked Questions</h3>
           <div className="space-y-4">
             {FAQS.map((faq) => {
@@ -263,7 +291,7 @@ const Services = () => {
               )
             })}
           </div>
-        </section>
+        </motion.section>
 
         <div className="mt-8 w-full">
           <Link 
