@@ -179,19 +179,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
       }
       
       // Always fetch and display the latest leaderboard
-      const updatedScores = localStorage.getItem('snakeLeaderboard');
-      const allScores: LeaderboardEntry[] = updatedScores ? JSON.parse(updatedScores) : [];
-      
-      // Display top 10 with unique users
-      const uniqueScores = allScores.reduce((acc: LeaderboardEntry[], current: LeaderboardEntry) => {
-        const existing = acc.find(entry => entry.username.toLowerCase() === current.username.toLowerCase());
-        if (!existing) {
-          acc.push(current);
-        }
-        return acc;
-      }, []);
-      
-      setLeaderboard(uniqueScores.slice(0, 10));
+      await fetchLeaderboard();
       setShowUsernameInput(false);
       // Don't auto-show leaderboard on auto-submit
     } catch (error) {
@@ -475,7 +463,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative glass rounded-2xl p-8"
+          className="relative glass rounded-2xl p-4 sm:p-8 max-w-[95vw] sm:max-w-none mx-4"
           style={{
             background: 'rgba(20, 20, 30, 0.85)',
             border: '1px solid rgba(136, 120, 238, 0.2)',
@@ -488,43 +476,45 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
             <div className="flex items-center justify-between mb-2">
               <button
                 onClick={() => setShowLeaderboard(!showLeaderboard)}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
                 style={{ color: 'var(--accent)' }}
                 title="Leaderboard"
               >
-                <Trophy size={24} />
+                <Trophy size={20} className="sm:w-6 sm:h-6" />
               </button>
-              <h2 className="text-2xl font-bold flex items-center gap-2" style={{ 
+              <h2 className="text-lg sm:text-2xl font-bold flex items-center gap-1 sm:gap-2" style={{ 
                 color: 'var(--accent)',
                 textShadow: '0 2px 8px rgba(136, 120, 238, 0.5)'
               }}>
-                <span style={{ filter: 'drop-shadow(0 0 8px rgba(136, 120, 238, 0.5))' }}>🐍</span>
+                <span className="text-xl sm:text-2xl" style={{ filter: 'drop-shadow(0 0 8px rgba(136, 120, 238, 0.5))' }}>🐍</span>
                 <span>Snake Game</span>
               </h2>
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
                 style={{ color: 'var(--accent)' }}
               >
-                <X size={24} />
+                <X size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
-            <div className="flex justify-center gap-8 text-sm" style={{ color: 'var(--muted)' }}>
+            <div className="flex justify-center gap-4 sm:gap-8 text-xs sm:text-sm" style={{ color: 'var(--muted)' }}>
               <div>Score: <span className="font-bold" style={{ color: 'var(--accent)' }}>{score}</span></div>
               <div>High Score: <span className="font-bold" style={{ color: 'var(--accent)' }}>{highScore}</span></div>
             </div>
           </div>
 
           {/* Game canvas */}
-          <div className="relative">
+          <div className="relative flex justify-center">
             <canvas
               ref={canvasRef}
               width={GRID_SIZE * CELL_SIZE}
               height={GRID_SIZE * CELL_SIZE}
-              className="rounded-lg"
+              className="rounded-lg max-w-full h-auto"
               style={{
                 border: '2px solid rgba(255, 255, 255, 0.1)',
                 background: 'rgba(0, 0, 0, 0.3)',
+                maxWidth: '400px',
+                width: '100%',
               }}
             />
 
@@ -714,7 +704,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Controls hint */}
-          <div className="text-center mt-4 text-xs" style={{ color: 'var(--muted)', paddingTop: '2px' }}>
+          <div className="text-center mt-4 text-[10px] sm:text-xs" style={{ color: 'var(--muted)', paddingTop: '2px' }}>
             <div className="mb-1">Arrow Keys or WASD to move</div>
             <div>SPACE to pause • ESC to exit</div>
           </div>
