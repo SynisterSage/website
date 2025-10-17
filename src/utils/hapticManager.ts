@@ -21,7 +21,14 @@ class HapticManager {
     if (this.initialized) return
     
     // Check if device supports vibration
-    this.supported = typeof navigator !== 'undefined' && 'vibrate' in navigator
+    // Note: iOS Safari doesn't support navigator.vibrate, but we still show the toggle
+    // for future compatibility and user preference storage
+    const hasVibrate = typeof navigator !== 'undefined' && 'vibrate' in navigator
+    const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent)
+    
+    // Show toggle on iOS even without vibrate support (for future compatibility)
+    // or if vibrate is actually supported
+    this.supported = hasVibrate || isIOS
 
     // Check localStorage for user preference
     try {
@@ -33,6 +40,13 @@ class HapticManager {
     }
     
     this.initialized = true
+    
+    console.log('HapticManager initialized:', {
+      supported: this.supported,
+      hasVibrate,
+      isIOS,
+      enabled: this.enabled
+    })
   }
 
   private getPattern(type: HapticPattern): number | number[] {

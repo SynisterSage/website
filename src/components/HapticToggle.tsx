@@ -15,15 +15,36 @@ const HapticToggle = () => {
   // Render only on client so navigator detection is accurate on deployed sites
   useEffect(() => {
     setMounted(true)
-    setHapticEnabled(hapticManager.isEnabled())
+    const supported = hapticManager.isSupported()
+    const enabled = hapticManager.isEnabled()
+    
+    // Debug logging for Safari mobile
+    console.log('HapticToggle Debug:', {
+      mounted: true,
+      supported,
+      enabled,
+      hasNavigator: typeof navigator !== 'undefined',
+      hasVibrate: typeof navigator !== 'undefined' && 'vibrate' in navigator,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'
+    })
+    
+    setHapticEnabled(enabled)
   }, [])
 
-  if (!mounted) return null
+  if (!mounted) {
+    console.log('HapticToggle: Not mounted yet')
+    return null
+  }
 
   const hapticSupported = hapticManager.isSupported()
 
   // Don't show the toggle if haptic is not supported
-  if (!hapticSupported) return null
+  if (!hapticSupported) {
+    console.log('HapticToggle: Not supported, hiding component')
+    return null
+  }
+
+  console.log('HapticToggle: Rendering button')
 
   const toggleHaptic = () => {
     const newState = hapticManager.toggle()
