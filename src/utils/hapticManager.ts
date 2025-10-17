@@ -8,14 +8,31 @@ type HapticPattern = 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'selec
 class HapticManager {
   private enabled: boolean = true
   private supported: boolean = false
+  private initialized: boolean = false
 
   constructor() {
+    // Delay initialization to ensure we're in browser context
+    if (typeof window !== 'undefined') {
+      this.initialize()
+    }
+  }
+
+  private initialize() {
+    if (this.initialized) return
+    
     // Check if device supports vibration
-    this.supported = 'vibrate' in navigator
+    this.supported = typeof navigator !== 'undefined' && 'vibrate' in navigator
 
     // Check localStorage for user preference
-    const savedEnabled = localStorage.getItem('hapticEnabled')
-    this.enabled = savedEnabled !== 'false' // default to true
+    try {
+      const savedEnabled = localStorage.getItem('hapticEnabled')
+      this.enabled = savedEnabled !== 'false' // default to true
+    } catch (e) {
+      // localStorage not available, keep default
+      this.enabled = true
+    }
+    
+    this.initialized = true
   }
 
   private getPattern(type: HapticPattern): number | number[] {
@@ -38,6 +55,7 @@ class HapticManager {
   }
 
   vibrate(pattern: HapticPattern) {
+    this.initialize() // Ensure initialized
     if (!this.enabled || !this.supported) return
 
     const vibrationPattern = this.getPattern(pattern)
@@ -51,8 +69,13 @@ class HapticManager {
   }
 
   toggle() {
+    this.initialize() // Ensure initialized
     this.enabled = !this.enabled
-    localStorage.setItem('hapticEnabled', String(this.enabled))
+    try {
+      localStorage.setItem('hapticEnabled', String(this.enabled))
+    } catch (e) {
+      // localStorage not available
+    }
     
     // Provide feedback when enabling
     if (this.enabled && this.supported) {
@@ -63,10 +86,12 @@ class HapticManager {
   }
 
   isEnabled() {
+    this.initialize() // Ensure initialized
     return this.enabled
   }
 
   isSupported() {
+    this.initialize() // Ensure initialized
     return this.supported
   }
 

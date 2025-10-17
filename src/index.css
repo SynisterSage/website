@@ -1336,6 +1336,12 @@
     
     /* Stack grid for mobile - 2 columns */
     .stack-grid { gap: 0.75rem; grid-template-columns: repeat(2, 1fr); }
+    
+    /* Fix work experience card text cutoff on mobile */
+    .content-column .space-y-4 button .flex.items-center.gap-3 {
+      flex-wrap: wrap !important;
+      white-space: normal !important;
+    }
   }
  
   /* Sidebar header fixed height to keep collapsed/expanded alignment consistent */
