@@ -11,7 +11,6 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
   
   // Easter egg: track rapid clicks
   const [clickCount, setClickCount] = useState(0)
-  const [showHint, setShowHint] = useState(false)
   const clickTimeoutRef = useRef<number | null>(null)
 
   const menuVariants = {
@@ -42,7 +41,6 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
     // Check if user clicked 5 times (trigger Easter egg)
     if (newCount >= 5) {
       setClickCount(0)
-      setShowHint(false)
       if (onEasterEggTrigger) {
         onEasterEggTrigger()
         e.preventDefault()
@@ -77,22 +75,10 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
           <Link
             to="/"
             onClick={handleLogoClick}
-            onMouseEnter={() => setShowHint(true)}
-            onMouseLeave={() => setShowHint(false)}
-            className="text-2xl font-bold brand-link relative group"
+            className="text-2xl font-bold brand-link"
             style={{ color: 'var(--text-nav)' }}
-            title="Click fast for easter egg"
           >
             A.F.
-            {/* Subtle hover hint */}
-            {showHint && (
-              <span
-                className="absolute -bottom-5 left-0 text-[9px] whitespace-nowrap opacity-40 pointer-events-none"
-                style={{ color: 'var(--muted)' }}
-              >
-                click fast for easter egg
-              </span>
-            )}
           </Link>
           <div className="text-sm sidebar-subtitle" style={{ color: 'var(--muted)' }}>Designer</div>
         </div>
