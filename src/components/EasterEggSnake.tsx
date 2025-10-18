@@ -372,19 +372,8 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
       }
 
       if (gameOver && e.key === ' ') {
-        // Restart game with random spawn
-        const newSpawn = getRandomSpawnPosition();
-        const newDir = getRandomDirection();
-        snake.current = [newSpawn];
-        direction.current = newDir;
-        nextDirection.current = newDir;
-        food.current = generateFood();
-        speedRef.current = INITIAL_SPEED;
-        setScore(0);
-        setGameOver(false);
-        setShowUsernameInput(false);
-        setShowLeaderboard(false);
-        gameAudio.gameStart();
+        // Restart game
+        restartGame();
         return;
       }
 
@@ -497,6 +486,22 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
     }
   }, [isPaused, gameOver, gameLoop]);
 
+  // Restart game function
+  const restartGame = useCallback(() => {
+    const newSpawn = getRandomSpawnPosition();
+    const newDir = getRandomDirection();
+    snake.current = [newSpawn];
+    direction.current = newDir;
+    nextDirection.current = newDir;
+    food.current = generateFood();
+    speedRef.current = INITIAL_SPEED;
+    setScore(0);
+    setGameOver(false);
+    setShowUsernameInput(false);
+    setShowLeaderboard(false);
+    gameAudio.gameStart();
+  }, [generateFood]);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -575,13 +580,14 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 flex items-center justify-center rounded-lg"
+                onClick={restartGame}
+                className="absolute inset-0 flex items-center justify-center rounded-lg cursor-pointer"
                 style={{
                   background: 'rgba(0, 0, 0, 0.7)',
                   backdropFilter: 'blur(4px)',
                 }}
               >
-                <div className="text-center px-4">
+                <div className="text-center px-4" onClick={(e) => e.stopPropagation()}>
                   <div className="text-4xl mb-4">💀</div>
                   <div className="text-xl font-bold mb-2" style={{ color: 'var(--accent)' }}>
                     Game Over!
