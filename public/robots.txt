@@ -1,0 +1,23 @@
+# Robots.txt for aferguson.art
+# https://www.robotstxt.org/robotstxt.html
+
+# Allow all bots to crawl all content
+User-agent: *
+Allow: /
+Crawl-delay: 0
+
+# Sitemap location
+Sitemap: https://aferguson.art/sitemap.xml
+
+# Google-specific settings
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Googlebot-Image
+Allow: /
+
+# Bing-specific settings
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 0

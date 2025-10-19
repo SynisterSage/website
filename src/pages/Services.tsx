@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import TiltCard from '../components/TiltCard'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 type Service = {
   id: string
@@ -93,6 +94,7 @@ const FAQS: FAQ[] = [
 ]
 
 const Services = () => {
+  usePageTitle('Services')
   const { triggerHaptic } = useHaptic()
   const [openId, setOpenId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)

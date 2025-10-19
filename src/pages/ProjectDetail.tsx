@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react'
 import { projects } from '../data/projects'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { logProjectView } from '../utils/analytics'
 
 const ProjectDetail = () => {
   const { triggerHaptic } = useHaptic()
   const { projectId } = useParams<{ projectId: string }>()
   const project = projects.find(p => p.id === projectId)
+  
+  // Set page title dynamically based on project
+  usePageTitle(project ? project.title : 'Project Not Found')
 
   // Track project view in Google Analytics
   useEffect(() => {

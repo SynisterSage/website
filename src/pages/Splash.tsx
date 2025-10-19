@@ -2,8 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import ProgressBarLoader from '../components/ProgressBarLoader';
 import { Suspense, useMemo } from 'react';
 import { projects } from '../data/projects';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function Splash() {
+  usePageTitle() // Use default site title
   const navigate = useNavigate();
   const assets = useMemo(() => {
     const urls = new Set<string>()

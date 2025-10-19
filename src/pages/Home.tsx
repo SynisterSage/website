@@ -4,8 +4,10 @@ import { useEffect, useRef } from 'react'
 import { projects } from '../data/projects'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const Home = () => {
+  usePageTitle() // Use default site title for homepage
   const { triggerHaptic } = useHaptic()
   
   // magnetic tilt for name: use local handlers (smoother via CSS transition)

@@ -2,10 +2,12 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { logDownload } from '../utils/analytics'
 import Toast from '../components/Toast'
 
 const Resume = () => {
+  usePageTitle('Resume')
   const { triggerHaptic } = useHaptic()
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState('Resume downloaded successfully!')

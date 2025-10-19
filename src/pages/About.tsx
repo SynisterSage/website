@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import TiltCard from '../components/TiltCard'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { projects } from '../data/projects'
 
 type WorkItem = {
@@ -67,6 +68,7 @@ const WORK: WorkItem[] = [
 ]
 
 const About = () => {
+  usePageTitle('About')
   const { triggerHaptic } = useHaptic()
   const [openId, setOpenId] = useState<string | null>(null)
 

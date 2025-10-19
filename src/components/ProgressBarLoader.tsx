@@ -183,31 +183,33 @@ export default function ProgressBarLoader({ duration = 3500, onComplete, assets 
   return (
     <div className="fixed inset-0" style={{ zIndex: 9998 }}>
       <div style={containerStyle}>
-        <div className="w-full max-w-xl rounded-xl p-[1px]" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--accent), white 25%), transparent)' }}>
-          <div className="rounded-xl progress-loader-container p-8 backdrop-blur-md border" style={{ borderColor: 'var(--glass-border, rgba(255,255,255,0.10))' }} data-pointer-type={typeof window !== 'undefined' && ('ontouchstart' in window ? 'coarse' : 'fine')}>
-            
-            {/* AF Logo - centered at top of card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="splash-logo-container mb-8"
-            >
-              <img 
-                src="/icons/logo.svg" 
-                alt="A.F. Logo" 
-                className="splash-logo"
-                style={{
-                  filter: `drop-shadow(0 0 20px ${accent}40) drop-shadow(0 0 40px ${accent}20)`,
-                }}
-              />
-            </motion.div>
+        <div className="w-full max-w-xl flex flex-col items-center gap-8">
+          {/* AF Logo - above the card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="splash-logo-container"
+          >
+            <img 
+              src="/icons/logo.svg" 
+              alt="A.F. Logo" 
+              className="splash-logo"
+              style={{
+                filter: `drop-shadow(0 0 20px ${accent}40) drop-shadow(0 0 40px ${accent}20)`,
+              }}
+            />
+          </motion.div>
 
-            {/* Progress Bar */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-sm text-[color:var(--muted)]">{steps[stepIndex]}</div>
-              <div className="text-xs text-[color:var(--muted)]">{Math.round(progress * 100)}%</div>
-            </div>
+          {/* Progress Card */}
+          <div className="w-full rounded-xl p-[1px]" style={{ background: 'linear-gradient(90deg, color-mix(in srgb, var(--accent), white 25%), transparent)' }}>
+            <div className="rounded-xl progress-loader-container p-8 backdrop-blur-md border" style={{ borderColor: 'var(--glass-border, rgba(255,255,255,0.10))' }} data-pointer-type={typeof window !== 'undefined' && ('ontouchstart' in window ? 'coarse' : 'fine')}>
+              
+              {/* Progress Bar */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-sm text-[color:var(--muted)]">{steps[stepIndex]}</div>
+                <div className="text-xs text-[color:var(--muted)]">{Math.round(progress * 100)}%</div>
+              </div>
             <div className="h-2.5 w-full rounded-md bg-[color:var(--glass-bg-light,rgba(255,255,255,0.06))] overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
               <motion.div
                 initial={{ width: '0%' }}
@@ -225,6 +227,7 @@ export default function ProgressBarLoader({ duration = 3500, onComplete, assets 
               <div className="text-xs text-[color:var(--muted)] loader-hint" aria-live="polite">Hold to skip</div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

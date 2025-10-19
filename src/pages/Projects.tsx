@@ -5,8 +5,10 @@ import { useState } from 'react'
 import TiltCard from '../components/TiltCard'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const Projects = () => {
+  usePageTitle('Projects')
   const { triggerHaptic } = useHaptic()
   const [searchQuery, setSearchQuery] = useState('')
 

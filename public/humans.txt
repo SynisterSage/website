@@ -1,0 +1,13 @@
+/* TEAM */
+Designer & Developer: Lex Ferguson
+Contact: afergyy [at] gmail.com
+Twitter: @lexfergusonn
+Instagram: @lexfergusonn
+LinkedIn: https://www.linkedin.com/in/lex-ferguson-3056a3275/
+Location: United States
+
+/* SITE */
+Last update: 2025/10/18
+Standards: HTML5, CSS3, JavaScript, TypeScript
+Components: React, Vite, TailwindCSS, Framer Motion
+Software: Figma, VS Code, Adobe Creative Suite

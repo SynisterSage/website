@@ -1,9 +1,34 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
+import NotFoundGame from '../components/NotFoundGame'
 
 const NotFound = () => {
+  usePageTitle('404 - Page Not Found')
   const { triggerHaptic } = useHaptic()
+  const [gameActive, setGameActive] = useState(false)
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.code === 'Space' || e.code === 'ArrowUp') && !gameActive) {
+        e.preventDefault()
+        setGameActive(true)
+        triggerHaptic('button')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [gameActive, triggerHaptic])
+
+  const handleActivateGame = () => {
+    if (!gameActive) {
+      setGameActive(true)
+      triggerHaptic('button')
+    }
+  }
 
   return (
     <motion.main
@@ -14,12 +39,34 @@ const NotFound = () => {
       style={{ minHeight: 'calc(100vh - 180px)' }}
     >
       <div className="text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-9xl font-bold text-accent mb-4">404</h1>
-          </motion.div>
+          {/* 404 text or Game */}
+          {!gameActive ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 cursor-pointer select-none"
+              onClick={handleActivateGame}
+              onTouchStart={handleActivateGame}
+            >
+              <h1 className="text-9xl font-bold text-accent mb-4 hover:scale-105 transition-transform">
+                404
+              </h1>
+              <p className="text-sm text-[var(--muted)] animate-pulse">
+                Press <kbd className="px-2 py-1 bg-[var(--accent)]/20 rounded mx-1">SPACE</kbd> or tap to play
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
+              <NotFoundGame 
+                isActive={gameActive} 
+                onClose={() => setGameActive(false)}
+              />
+            </motion.div>
+          )}
 
           <motion.h2
             className="text-3xl font-semibold mb-4"

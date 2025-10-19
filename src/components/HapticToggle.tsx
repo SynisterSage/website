@@ -3,7 +3,7 @@
  * Allows users to enable/disable haptic feedback
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { hapticManager } from '../utils/hapticManager'
 
@@ -11,6 +11,8 @@ const HapticToggle = () => {
   const [hapticEnabled, setHapticEnabled] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const popupRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   // Render only on client so navigator detection is accurate on deployed sites
   useEffect(() => {
@@ -30,6 +32,29 @@ const HapticToggle = () => {
     
     setHapticEnabled(enabled)
   }, [])
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        popupRef.current &&
+        buttonRef.current &&
+        !popupRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   if (!mounted) {
     console.log('HapticToggle: Not mounted yet')
@@ -61,16 +86,20 @@ const HapticToggle = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={popupRef}
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="absolute bottom-16 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 min-w-[240px]"
+            className="absolute bottom-20 right-0 bg-white/10 dark:bg-gray-900/10 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-white/10 p-4 min-w-[240px]"
+            style={{
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+            }}
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">📳</span>
-                  <span className="text-sm font-medium">Haptic Feedback</span>
+                  <span className="text-sm font-medium text-[var(--text)]">Haptic Feedback</span>
                 </div>
                 <button
                   onClick={toggleHaptic}
@@ -87,8 +116,8 @@ const HapticToggle = () => {
                 </button>
               </div>
 
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="pt-2 border-t border-white/10 dark:border-white/10">
+                <p className="text-xs text-gray-600 dark:text-gray-300">
                   Feel subtle vibrations when interacting with buttons and links
                 </p>
               </div>
@@ -98,11 +127,15 @@ const HapticToggle = () => {
       </AnimatePresence>
 
       <motion.button
+        ref={buttonRef}
         onClick={handleOpen}
-        className="w-14 h-14 rounded-full bg-accent text-white shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center text-2xl"
+        className="w-14 h-14 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 text-[var(--text)] shadow-lg hover:shadow-xl hover:bg-white/15 dark:hover:bg-white/10 transition-all flex items-center justify-center text-2xl"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Haptic feedback settings"
+        style={{
+          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+        }}
       >
         {isOpen ? '✕' : '📳'}
       </motion.button>

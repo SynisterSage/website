@@ -5,9 +5,11 @@ import Instagram from '../components/icons/Instagram'
 import SITE from '../data/site'
 import Toast from '../components/Toast'
 import { useHaptic } from '../hooks/useHaptic'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { logFormSubmit, logEvent } from '../utils/analytics'
 
 const Contact = () => {
+  usePageTitle('Contact')
   const { triggerHaptic } = useHaptic()
   const [formData, setFormData] = useState({
     name: '',

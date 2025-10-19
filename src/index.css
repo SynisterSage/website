@@ -986,31 +986,31 @@
   }
 
   .splash-logo {
-    /* Mobile: smaller logo inside card */
-    width: 56px;
+    /* Mobile: larger logo outside card */
+    width: 100px;
     height: auto;
     display: block;
     transition: all 0.3s var(--ui-ease);
   }
 
-  /* Tablet: medium logo */
+  /* Tablet: larger logo */
   @media (min-width: 640px) {
     .splash-logo {
-      width: 72px;
+      width: 120px;
     }
   }
 
-  /* Desktop: larger logo */
+  /* Desktop: even larger logo */
   @media (min-width: 1024px) {
     .splash-logo {
-      width: 88px;
+      width: 140px;
     }
   }
 
   /* Large desktop: largest logo */
   @media (min-width: 1536px) {
     .splash-logo {
-      width: 100px;
+      width: 160px;
     }
   }
 
@@ -2205,11 +2205,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
-/* When sidebar is expanded, add left margin to pull it back a bit */
+/* When sidebar is collapsed (72px): shift content left slightly to optically center it */
+.has-collapsed-sidebar .not-found-page {
+  margin-left: -36px !important; /* Half of 72px sidebar width */
+}
+
+/* When sidebar is expanded (288px / 18rem): shift content right to optically center it */
 .has-expanded-sidebar .not-found-page {
-  margin-left: -170px !important;
+  margin-left: 0px !important; /* Adjusted to move content slightly left */
 }
 
 /* Tablet breakpoint: reset margin for better centering */
@@ -2220,6 +2226,7 @@
     padding-right: 1rem !important;
   }
   
+  .has-collapsed-sidebar .not-found-page,
   .has-expanded-sidebar .not-found-page {
     margin-left: 0 !important;
   }
