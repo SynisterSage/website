@@ -11,15 +11,15 @@ interface RateLimitStore {
 // In-memory store (resets on cold start, which is acceptable for serverless)
 const store: RateLimitStore = {};
 
-// Cleanup old entries every 5 minutes
-setInterval(() => {
+// Cleanup function to remove expired entries (called on-demand instead of setInterval)
+function cleanupStore() {
   const now = Date.now();
   Object.keys(store).forEach(key => {
     if (store[key].resetTime < now) {
       delete store[key];
     }
   });
-}, 5 * 60 * 1000);
+}
 
 export interface RateLimitConfig {
   windowMs?: number;  // Time window in milliseconds (default: 60000 = 1 minute)
@@ -46,6 +46,11 @@ export function checkRateLimit(
   const windowMs = config.windowMs || 60000; // 1 minute default
   const max = config.max || 5; // 5 requests per window default
   const now = Date.now();
+
+  // Cleanup expired entries periodically (every ~10th request)
+  if (Math.random() < 0.1) {
+    cleanupStore();
+  }
 
   // Get or create rate limit entry
   if (!store[identifier] || store[identifier].resetTime < now) {
