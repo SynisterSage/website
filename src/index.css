@@ -779,15 +779,244 @@
     will-change: transform;
   }
 
-  .brand-link:focus {
-    outline: 3px solid color-mix(in srgb, var(--accent) 30%, transparent);
-    outline-offset: 4px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  /* Remove all hover/focus effects on brand-link */
+  .brand-link:focus,
+  .brand-link:hover,
+  .brand-link:active {
+    outline: none;
+    transform: none;
+    box-shadow: none;
+    background: none;
   }
 
-  .brand-link:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+  /* Easter egg hint system for AF logo */
+  /* Purple accent color for hint */
+  :root {
+    --accent-purple: #a855f7;
+  }
+
+  /* Idle state - subtle pulsing purple glow */
+  @keyframes logo-glow-pulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.8));
+    }
+  }
+
+  /* Progressive glow intensity on each click */
+  @keyframes logo-glow-click-1 {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+    50% {
+      filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.85));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+  }
+
+  @keyframes logo-glow-click-2 {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+    50% {
+      filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.9));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+  }
+
+  @keyframes logo-glow-click-3 {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+    50% {
+      filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.95));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+  }
+
+  @keyframes logo-glow-click-4 {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+    50% {
+      filter: drop-shadow(0 0 24px rgba(168, 85, 247, 1));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+  }
+
+  @keyframes logo-glow-unlock {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+    30% {
+      filter: drop-shadow(0 0 30px rgba(168, 85, 247, 1));
+    }
+    60% {
+      filter: drop-shadow(0 0 25px rgba(168, 85, 247, 1));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+    }
+  }
+
+  /* Apply glow animations based on hint stage */
+  .brand-link.hint-stage-0 .brand-logo {
+    animation: logo-glow-pulse 3s ease-in-out infinite;
+  }
+
+  .brand-link.hint-stage-1 .brand-logo {
+    animation: logo-glow-click-1 0.6s ease-out;
+  }
+
+  .brand-link.hint-stage-2 .brand-logo {
+    animation: logo-glow-click-2 0.7s ease-out;
+  }
+
+  .brand-link.hint-stage-3 .brand-logo {
+    animation: logo-glow-click-3 0.8s ease-out;
+  }
+
+  .brand-link.hint-stage-4 .brand-logo {
+    animation: logo-glow-click-4 0.9s ease-out;
+  }
+
+  .brand-link.hint-stage-5 .brand-logo {
+    animation: logo-glow-unlock 1s ease-out;
+  }
+
+  /* Responsive - slightly gentler glow on mobile */
+  @media (max-width: 768px) {
+    @keyframes logo-glow-pulse {
+      0%, 100% {
+        filter: drop-shadow(0 0 0px rgba(168, 85, 247, 0));
+      }
+      50% {
+        filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.5));
+      }
+    }
+  }
+
+  /* Base brand-link styling */
+  .brand-link {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: none !important;
+    will-change: auto;
+    position: relative;
+    transform: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: none !important;
+  }
+
+  .brand-link:hover,
+  .brand-link:focus,
+  .brand-link:active,
+  .sidebar-collapsed .brand-link:hover,
+  .sidebar-collapsed .brand-link:focus,
+  .sidebar-header .brand-link:hover,
+  .sidebar-header .brand-link:focus {
+    transform: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: none !important;
+  }
+
+  .brand-logo {
+    width: 48px;
+    height: 48px;
+    display: block;
+  }
+
+  /* Brand stack layout - horizontal for mobile/tablet navbar, vertical for sidebar */
+  .brand-stack {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Navbar logo in top bar - keep at 48px */
+  .mobile-nav .brand-logo {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* Sidebar brand logo - slightly smaller (43px instead of 48px) */
+  .sidebar-header .brand-logo {
+    width: 43px !important;
+    height: 43px !important;
+    min-width: 43px;
+    min-height: 43px;
+  }
+
+  .sidebar-collapsed .brand-logo {
+    width: 43px !important;
+    height: 43px !important;
+    min-width: 43px;
+    min-height: 43px;
+  }
+
+  /* Sidebar header vertical alignment with toggles */
+  .sidebar-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .sidebar-header .brand-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* When collapsed, ensure logo stays in correct position */
+  .sidebar-collapsed .sidebar-header .brand-link {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide Designer text on mobile/tablet navbar */
+  @media (max-width: 1024px) {
+    .brand-stack .sidebar-subtitle {
+      display: none;
+    }
+  }
+
+  /* Responsive adjustments for mobile & tablet */
+  @media (max-width: 1024px) {
+    .brand-stack {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  /* Responsive adjustments for small mobile */
+  @media (max-width: 768px) {
+    .brand-link {
+      padding: 4px 8px;
+    }
   }
 
   /* Home page name: initial entrance animation and magnetic smoothing */
@@ -818,10 +1047,13 @@
   @media (prefers-reduced-motion: reduce) {
     .brand-link,
     .brand-link:focus,
-    .brand-link:hover {
+    .brand-link:hover,
+    .brand-link:active {
       transition: none !important;
       transform: none !important;
       box-shadow: none !important;
+      outline: none !important;
+      background: none !important;
     }
   }
 
@@ -1344,12 +1576,7 @@
     }
   }
  
-  /* Sidebar header fixed height to keep collapsed/expanded alignment consistent */
-  .sidebar-header {
-    height: 56px; /* matches the visual header height */
-    display: flex;
-    align-items: center;
-  }
+  /* Sidebar header - removed duplicate, now defined above with brand-link styles */
 
   /* project slug shown next to the Projects nav item when on a project detail */
   .project-slug {

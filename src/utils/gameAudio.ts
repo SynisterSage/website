@@ -5,6 +5,15 @@
 
 class GameAudio {
   private audioContext: AudioContext | null = null;
+  private soundEnabled: boolean = true;
+
+  setSoundEnabled(enabled: boolean) {
+    this.soundEnabled = enabled;
+  }
+
+  isSoundEnabled(): boolean {
+    return this.soundEnabled;
+  }
 
   private getContext(): AudioContext {
     if (!this.audioContext) {
@@ -17,6 +26,8 @@ class GameAudio {
    * Play a simple beep tone
    */
   private playTone(frequency: number, duration: number, type: OscillatorType = 'square', volume: number = 0.3) {
+    if (!this.soundEnabled) return;
+    
     try {
       const ctx = this.getContext();
       const oscillator = ctx.createOscillator();
@@ -58,6 +69,8 @@ class GameAudio {
    * Game over - descending sad tone
    */
   gameOver() {
+    if (!this.soundEnabled) return;
+    
     try {
       const ctx = this.getContext();
       const oscillator = ctx.createOscillator();
@@ -88,6 +101,13 @@ class GameAudio {
   gameStart() {
     this.playTone(400, 0.1, 'sine', 0.2);
     setTimeout(() => this.playTone(600, 0.15, 'sine', 0.2), 80);
+  }
+
+  /**
+   * UI click - short bright pop
+   */
+  click() {
+    this.playTone(1200, 0.05, 'sine', 0.15);
   }
 }
 

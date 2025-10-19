@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trophy } from 'lucide-react';
+import { X, Trophy, Volume2, VolumeOff } from 'lucide-react';
 import { gameAudio } from '../utils/gameAudio';
+import { fetchLeaderboard as fetchLeaderboardFromService, submitScore as submitScoreToService, onLeaderboardUpdate } from '../lib/leaderboardService';
 
 interface Position {
   x: number;
@@ -15,6 +16,7 @@ interface LeaderboardEntry {
   score: number;
   timestamp: number;
   id?: string;
+  userId?: string;
 }
 
 const GRID_SIZE = 20;
@@ -60,6 +62,15 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [submittingScore, setSubmittingScore] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      return localStorage.getItem('snakeSoundEnabled') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const [easterEggClicks, setEasterEggClicks] = useState(0);
+  const [backdropClickEnabled, setBackdropClickEnabled] = useState(false);
 
   // Game state refs (not reactive, updated in game loop)
   const initialSpawn = useRef(getRandomSpawnPosition());
@@ -77,46 +88,66 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
     isPausedRef.current = isPaused;
   }, [isPaused]);
 
+  // Sync soundEnabled state with gameAudio and localStorage
+  useEffect(() => {
+    gameAudio.setSoundEnabled(soundEnabled);
+    try {
+      localStorage.setItem('snakeSoundEnabled', soundEnabled.toString());
+    } catch {}
+  }, [soundEnabled]);
+
+  // Enable backdrop click after short delay to prevent accidental closes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBackdropClickEnabled(true);
+    }, 300); // 300ms delay
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   // Fetch leaderboard on mount
   useEffect(() => {
     fetchLeaderboard();
-    // Poll for updates every 10 seconds
+    
+    // Set up real-time listener if available
+    const unsubscribe = onLeaderboardUpdate((entries) => {
+      setLeaderboard(entries as LeaderboardEntry[]);
+    });
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Poll leaderboard during active gameplay (not when paused or game over)
+  useEffect(() => {
+    if (gameOver || isPaused || showLeaderboard) {
+      return;
+    }
+    
+    // Poll for updates every 10 seconds during active gameplay
     const interval = setInterval(fetchLeaderboard, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [gameOver, isPaused, showLeaderboard]);
 
   const fetchLeaderboard = async () => {
     try {
-      // Try localStorage first (for local development)
-      const localScores = localStorage.getItem('snakeLeaderboard');
-      if (localScores) {
-        const parsed = JSON.parse(localScores);
-        // Filter to only show highest score per user
-        const uniqueScores = parsed.reduce((acc: LeaderboardEntry[], current: LeaderboardEntry) => {
-          const existing = acc.find(entry => entry.username.toLowerCase() === current.username.toLowerCase());
-          if (!existing) {
-            acc.push(current);
-          } else if (current.score > existing.score) {
-            // Replace with higher score
-            const index = acc.indexOf(existing);
-            acc[index] = current;
-          }
-          return acc;
-        }, []);
-        uniqueScores.sort((a: LeaderboardEntry, b: LeaderboardEntry) => b.score - a.score);
-        setLeaderboard(uniqueScores.slice(0, 10));
-      }
-
-      // Also try API (for production)
-      const response = await fetch('/api/snake-leaderboard');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.leaderboard) {
-          setLeaderboard(data.leaderboard);
-        }
-      }
+      const entries = await fetchLeaderboardFromService();
+      setLeaderboard(entries as LeaderboardEntry[]);
     } catch (error) {
-      console.log('Using local leaderboard storage');
+      console.error('Failed to fetch leaderboard:', error);
+    }
+  };
+
+  const handleEasterEggClick = () => {
+    const newClicks = easterEggClicks + 1;
+    setEasterEggClicks(newClicks);
+    gameAudio.click();
+    
+    if (newClicks >= 5) {
+      // Open the snake game
+      setEasterEggClicks(0);
+      // Game already visible, this is the hint to keep playing
     }
   };
 
@@ -128,60 +159,16 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
       // Save username to session
       sessionStorage.setItem('snakeUsername', username.trim());
 
-      const newEntry: LeaderboardEntry = {
-        username: username.trim(),
-        score,
-        timestamp: Date.now(),
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      };
-
-      // Try API first (for production)
-      try {
-        const response = await fetch('/api/snake-leaderboard', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: username.trim(), score }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.leaderboard) {
-            setLeaderboard(data.leaderboard);
-            setShowUsernameInput(false);
-            // Don't auto-show leaderboard on auto-submit
-            return;
-          }
-        }
-      } catch (apiError) {
-        console.log('API not available, using local storage');
-      }
-
-      // Fallback to localStorage (for local development)
-      const localScores = localStorage.getItem('snakeLeaderboard');
-      let scores: LeaderboardEntry[] = localScores ? JSON.parse(localScores) : [];
+      // Submit score using the service (which handles Firestore + fallback to localStorage)
+      const updated = await submitScoreToService(username.trim(), score);
       
-      // Check if user already has a score
-      const existingEntry = scores.find(entry => entry.username.toLowerCase() === username.trim().toLowerCase());
-      
-      // Only update if new score is higher OR user doesn't exist
-      if (!existingEntry || score > existingEntry.score) {
-        // Remove any existing entries for this user
-        scores = scores.filter(entry => entry.username.toLowerCase() !== username.trim().toLowerCase());
-        
-        // Add new score
-        scores.push(newEntry);
-        
-        // Sort and keep top 50 for storage
-        scores.sort((a, b) => b.score - a.score);
-        scores = scores.slice(0, 50);
-        
-        localStorage.setItem('snakeLeaderboard', JSON.stringify(scores));
-      }
-      
-      // Always fetch and display the latest leaderboard
+      // Fetch and display the updated leaderboard
       await fetchLeaderboard();
       setShowUsernameInput(false);
-      // Don't auto-show leaderboard on auto-submit
+      
+      if (!updated) {
+        console.log('Score not submitted (not higher than existing score)');
+      }
     } catch (error) {
       console.error('Failed to submit score:', error);
     } finally {
@@ -420,9 +407,14 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
     const handleTouchStart = (e: TouchEvent) => {
       touchStartX = e.changedTouches[0].screenX;
       touchStartY = e.changedTouches[0].screenY;
+      // Prevent page scroll while touching the game
+      e.preventDefault();
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      // Prevent page scroll while touching the game
+      e.preventDefault();
+      
       if (gameOver) return;
       
       touchEndX = e.changedTouches[0].screenX;
@@ -452,12 +444,19 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
 
     const canvas = canvasRef.current;
     if (canvas) {
+      const handleTouchMove = (e: TouchEvent) => {
+        // Prevent page scroll/zoom during game interaction
+        e.preventDefault();
+      };
+      
       canvas.addEventListener('touchstart', handleTouchStart);
       canvas.addEventListener('touchend', handleTouchEnd);
+      canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
       
       return () => {
         canvas.removeEventListener('touchstart', handleTouchStart);
         canvas.removeEventListener('touchend', handleTouchEnd);
+        canvas.removeEventListener('touchmove', handleTouchMove);
       };
     }
   }, [gameOver]);
@@ -513,7 +512,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
           backdropFilter: 'blur(8px)',
         }}
-        onClick={onClose}
+        onClick={backdropClickEnabled ? onClose : undefined}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
@@ -530,10 +529,13 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
         >
           {/* Header */}
           <div className="text-center mb-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="relative flex items-center justify-center mb-2">
               <button
-                onClick={() => setShowLeaderboard(!showLeaderboard)}
-                className="p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
+                onClick={() => {
+                  gameAudio.click();
+                  setShowLeaderboard(!showLeaderboard);
+                }}
+                className="absolute left-0 p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
                 style={{ color: 'var(--accent)' }}
                 title="Leaderboard"
               >
@@ -546,13 +548,29 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                 <span className="text-xl sm:text-2xl" style={{ filter: 'drop-shadow(0 0 8px rgba(136, 120, 238, 0.5))' }}>🐍</span>
                 <span>Snake Game</span>
               </h2>
-              <button
-                onClick={onClose}
-                className="p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
-                style={{ color: 'var(--accent)' }}
-              >
-                <X size={20} className="sm:w-6 sm:h-6" />
-              </button>
+              <div className="absolute right-0 flex gap-2">
+                <button
+                  onClick={() => {
+                    gameAudio.click();
+                    setSoundEnabled(!soundEnabled);
+                  }}
+                  className="p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
+                  style={{ color: 'var(--accent)' }}
+                  title={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+                >
+                  {soundEnabled ? <Volume2 size={20} className="sm:w-6 sm:h-6" /> : <VolumeOff size={20} className="sm:w-6 sm:h-6" />}
+                </button>
+                <button
+                  onClick={() => {
+                    gameAudio.click();
+                    onClose();
+                  }}
+                  className="p-1 sm:p-2 rounded-lg hover:bg-white/10 transition-colors"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  <X size={20} className="sm:w-6 sm:h-6" />
+                </button>
+              </div>
             </div>
             <div className="flex justify-center gap-4 sm:gap-8 text-xs sm:text-sm" style={{ color: 'var(--muted)' }}>
               <div>Score: <span className="font-bold" style={{ color: 'var(--accent)' }}>{score}</span></div>
@@ -580,7 +598,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                onClick={restartGame}
+                onClick={() => {
+                  gameAudio.click();
+                  restartGame();
+                }}
                 className="absolute inset-0 flex items-center justify-center rounded-lg cursor-pointer"
                 style={{
                   background: 'rgba(0, 0, 0, 0.7)',
@@ -597,7 +618,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                   </div>
                   {score > 0 && (
                     <button
-                      onClick={() => setShowLeaderboard(true)}
+                      onClick={() => {
+                        gameAudio.click();
+                        setShowLeaderboard(true);
+                      }}
                       className="text-xs mb-2 px-3 py-1 rounded-lg hover:bg-white/10 transition-colors"
                       style={{ color: 'var(--accent)' }}
                     >
@@ -652,7 +676,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={submitScore}
+                      onClick={() => {
+                        gameAudio.click();
+                        submitScore();
+                      }}
                       disabled={!username.trim() || submittingScore}
                       className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                       style={{
@@ -663,7 +690,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                       {submittingScore ? 'Submitting...' : 'Submit'}
                     </button>
                     <button
-                      onClick={() => setShowUsernameInput(false)}
+                      onClick={() => {
+                        gameAudio.click();
+                        setShowUsernameInput(false);
+                      }}
                       className="px-4 py-2 rounded-lg text-sm hover:bg-white/10 transition-colors"
                       style={{ color: 'var(--muted)' }}
                     >
@@ -726,7 +756,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                     )}
                   </div>
                   <button
-                    onClick={() => setShowLeaderboard(false)}
+                    onClick={() => {
+                      gameAudio.click();
+                      setShowLeaderboard(false);
+                    }}
                     className="text-xs px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
                     style={{ color: 'var(--muted)' }}
                   >

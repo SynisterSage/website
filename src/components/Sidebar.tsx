@@ -60,21 +60,29 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange, onEaste
     
     // Easter egg click tracking
     const newCount = clickCount + 1
-    setClickCount(newCount)
     
     // Clear previous timeout
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current)
     }
     
-    // Check if user clicked 5 times (trigger Easter egg)
-    if (newCount >= 5) {
-      setClickCount(0)
+    // Check if user clicked exactly 5 times (trigger Easter egg)
+    if (newCount === 5) {
+      setClickCount(5) // Keep at 5 to show unlock animation
       if (onEasterEggTrigger) {
         onEasterEggTrigger()
         e.preventDefault()
+        // Reset after a delay to allow animation to complete
+        setTimeout(() => setClickCount(0), 1000)
         return
       }
+    }
+    
+    // Cap at 5 - don't go higher to prevent accidental closure
+    if (newCount > 5) {
+      setClickCount(5)
+    } else {
+      setClickCount(newCount)
     }
     
     // Reset click count after 2 seconds
@@ -105,11 +113,15 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange, onEaste
   <div className={`flex items-center gap-3 mb-6 px-2 sidebar-header ${collapsed ? 'relative' : ''}`}>
           <Link
             to="/"
-            className={`text-2xl font-bold sidebar-title ${collapsed ? 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : ''}`}
+            className={`brand-link ${collapsed ? 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : ''} ${clickCount > 0 ? `hint-stage-${clickCount}` : 'hint-stage-0'}`}
             style={{ color: 'var(--text-nav)' }}
             onClick={handleLogoClick}
           >
-            A.F.
+            <img 
+              src="/icons/logo.svg" 
+              alt="A.F. Logo"
+              className="brand-logo"
+            />
           </Link>
 
             {collapsed ? (
