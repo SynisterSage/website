@@ -78,22 +78,19 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
   return (
     <nav className="fixed w-full z-60 px-6 py-3 mobile-nav glass" style={{ color: 'var(--mobile-text)' }}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Left: brand + subtitle */}
-        <div className="brand-stack">
-          <Link
-            to="/"
-            onClick={handleLogoClick}
-            className={`brand-link ${clickCount > 0 ? `hint-stage-${clickCount}` : 'hint-stage-0'}`}
-            style={{ color: 'var(--text-nav)' }}
-          >
-            <img 
-              src="/icons/logo.svg" 
-              alt="A.F. Logo"
-              className="brand-logo"
-            />
-          </Link>
-          <div className="text-sm sidebar-subtitle" style={{ color: 'var(--muted)' }}>Designer</div>
-        </div>
+        {/* Left: brand */}
+        <Link
+          to="/"
+          onClick={handleLogoClick}
+          className={`brand-link ${clickCount > 0 ? `hint-stage-${clickCount}` : 'hint-stage-0'}`}
+          style={{ color: 'var(--text-nav)' }}
+        >
+          <img 
+            src="/icons/logo.svg" 
+            alt="A.F. Logo"
+            className="brand-logo"
+          />
+        </Link>
 
         {/* Right: theme toggle + menu */}
         <div className="flex items-center gap-3">

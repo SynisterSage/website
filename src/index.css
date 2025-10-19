@@ -978,6 +978,42 @@
     position: relative;
   }
 
+  /* === Splash Screen Logo === */
+  .splash-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .splash-logo {
+    /* Mobile: smaller logo inside card */
+    width: 56px;
+    height: auto;
+    display: block;
+    transition: all 0.3s var(--ui-ease);
+  }
+
+  /* Tablet: medium logo */
+  @media (min-width: 640px) {
+    .splash-logo {
+      width: 72px;
+    }
+  }
+
+  /* Desktop: larger logo */
+  @media (min-width: 1024px) {
+    .splash-logo {
+      width: 88px;
+    }
+  }
+
+  /* Large desktop: largest logo */
+  @media (min-width: 1536px) {
+    .splash-logo {
+      width: 100px;
+    }
+  }
+
   .sidebar-header .brand-link {
     display: flex;
     align-items: center;

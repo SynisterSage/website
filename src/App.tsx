@@ -46,46 +46,43 @@ function App() {
   
   function ScrollToTop() {
     const location = useLocation()
+    
     useEffect(() => {
       // Track page view with Google Analytics
       logPageView(location.pathname + location.search)
       
-      // Always jump to top on route change so each page opens at the top.
-      // Do multiple attempts (immediate, requestAnimationFrame, timeout) to
-      // counter any layout transitions that might re-apply a scroll position.
-      const scrollTop = () => {
-        try {
-          const main = document.querySelector('.main-content') as HTMLElement | null
-          if (main && typeof main.scrollTo === 'function') main.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-          window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-          // also clear legacy properties
-          document.documentElement && (document.documentElement.scrollTop = 0)
-          document.body && (document.body.scrollTop = 0)
-        } catch (e) {
-          // ignore
-        }
+      // Temporarily disable smooth scrolling to ensure instant scroll to top
+      const root = document.documentElement
+      const originalScrollBehavior = root.style.scrollBehavior
+      root.style.scrollBehavior = 'auto'
+      
+      // Forcefully scroll to top
+      window.scrollTo(0, 0)
+      
+      // Restore smooth scrolling after a brief delay
+      const restoreTimeout = setTimeout(() => {
+        root.style.scrollBehavior = originalScrollBehavior
+      }, 100)
+      
+      return () => {
+        clearTimeout(restoreTimeout)
+        root.style.scrollBehavior = originalScrollBehavior
       }
-
-      scrollTop()
-      const raf = requestAnimationFrame(() => scrollTop())
-      const t = setTimeout(() => scrollTop(), 80)
-      return () => { cancelAnimationFrame(raf); clearTimeout(t) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.pathname])
+    }, [location.pathname, location.search, location.key])
+    
     return null
   }
 
-  // Prevent the browser's native scroll restoration from re-applying previous
-  // scroll positions when navigating. We set manual on mount and restore on unmount.
+  // Prevent the browser's native scroll restoration
   useEffect(() => {
-    try {
-      if ('scrollRestoration' in history) {
-        const prev = (history as any).scrollRestoration
-        ;(history as any).scrollRestoration = 'manual'
-        return () => { (history as any).scrollRestoration = prev }
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    
+    return () => {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
       }
-    } catch (e) {
-      // ignore
     }
   }, [])
 
