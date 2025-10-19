@@ -1,4 +1,5 @@
-import { db, collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, where, writeBatch } from './firebase';
+import { db, collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, where } from './firebase';
+import { onSnapshot } from 'firebase/firestore';
 
 export interface SnakeLeaderboardEntry {
   id: string;
@@ -112,9 +113,6 @@ export const onLeaderboardUpdate = (
       limit(10)
     );
     
-    // Import onSnapshot dynamically to avoid issues
-    const { onSnapshot } = require('firebase/firestore');
-    
     const unsubscribe = onSnapshot(q, (snapshot: any) => {
       const entries = snapshot.docs.map((doc: any) => ({
         id: doc.id,
@@ -152,7 +150,7 @@ const getLocalLeaderboard = (): SnakeLeaderboardEntry[] => {
       return acc;
     }, []);
     
-    return uniqueScores.sort((a, b) => b.score - a.score).slice(0, 10);
+    return uniqueScores.sort((a: SnakeLeaderboardEntry, b: SnakeLeaderboardEntry) => b.score - a.score).slice(0, 10);
   } catch (error) {
     console.error('Failed to get local leaderboard:', error);
     return [];

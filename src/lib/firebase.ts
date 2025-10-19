@@ -1,6 +1,9 @@
 import { initializeApp } from 'firebase/app';
+import type { FirebaseApp } from 'firebase/app';
 import { getFirestore, collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, where, writeBatch } from 'firebase/firestore';
+import type { Firestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import type { Auth } from 'firebase/auth';
 
 // Your Firebase config - Replace with your actual Firebase project credentials
 const firebaseConfig = {
@@ -13,9 +16,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app;
-let db;
-let auth;
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let auth: Auth | undefined;
 
 try {
   if (firebaseConfig.projectId) {

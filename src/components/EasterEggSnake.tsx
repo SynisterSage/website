@@ -69,7 +69,6 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
       return true;
     }
   });
-  const [easterEggClicks, setEasterEggClicks] = useState(0);
   const [backdropClickEnabled, setBackdropClickEnabled] = useState(false);
 
   // Game state refs (not reactive, updated in game loop)
@@ -136,18 +135,6 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
       setLeaderboard(entries as LeaderboardEntry[]);
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
-    }
-  };
-
-  const handleEasterEggClick = () => {
-    const newClicks = easterEggClicks + 1;
-    setEasterEggClicks(newClicks);
-    gameAudio.click();
-    
-    if (newClicks >= 5) {
-      // Open the snake game
-      setEasterEggClicks(0);
-      // Game already visible, this is the hint to keep playing
     }
   };
 
