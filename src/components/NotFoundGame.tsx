@@ -34,13 +34,13 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
     height: 50,
     velocityY: 0,
     jumping: false,
-    gravity: 0.6,
-    jumpStrength: -12
+    gravity: 0.7,
+    jumpStrength: -13
   })
   
   const obstaclesRef = useRef<Obstacle[]>([])
   const groundY = 250
-  const gameSpeed = useRef(4)
+  const gameSpeed = useRef(6)
   const scoreRef = useRef(0)
   const gameStartedRef = useRef(false)
   const gameOverRef = useRef(false)
@@ -166,8 +166,8 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const handleJump = (e: KeyboardEvent | MouseEvent | TouchEvent) => {
-      if (e instanceof KeyboardEvent && e.code !== 'Space' && e.code !== 'ArrowUp') return
+    const handleJump = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' && e.code !== 'ArrowUp') return
       
       e.preventDefault()
       
@@ -194,13 +194,14 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
       e.preventDefault()
       if (gameOverRef.current) {
         resetGame()
-      } else {
-        const player = playerRef.current
-        if (!player.jumping) {
-          player.velocityY = player.jumpStrength
-          player.jumping = true
-          playSound(jumpSoundRef)
-        }
+        return
+      }
+      
+      const player = playerRef.current
+      if (!player.jumping) {
+        player.velocityY = player.jumpStrength
+        player.jumping = true
+        playSound(jumpSoundRef)
       }
     }
 
@@ -228,10 +229,11 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
     player.velocityY = 0
     player.jumping = false
     obstaclesRef.current = []
-    gameSpeed.current = 4
+    gameSpeed.current = 6
     scoreRef.current = 0
     setScore(0)
     setGameOver(false)
+    gameOverRef.current = false
     gameStartedRef.current = true
     
     // Cancel any existing loop
@@ -368,7 +370,7 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
     ctx.shadowBlur = 0
 
     // Spawn obstacles
-    if (gameStartedRef.current && !gameOver) {
+    if (gameStartedRef.current && !gameOverRef.current) {
       spawnObstacle()
     }
 
@@ -376,7 +378,7 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
     for (let i = obstacles.length - 1; i >= 0; i--) {
       const obstacle = obstacles[i]
       
-      if (gameStartedRef.current && !gameOver) {
+      if (gameStartedRef.current && !gameOverRef.current) {
         obstacle.x -= gameSpeed.current
       }
 
@@ -396,6 +398,7 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
         player.y + player.height > groundY - obstacle.height
       ) {
         setGameOver(true)
+        gameOverRef.current = true
         gameStartedRef.current = false
         playSound(gameOverSoundRef)
         return // Stop the loop
@@ -489,8 +492,20 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
           />
           
           {gameOver && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg)]/80 backdrop-blur-sm rounded-lg">
-              <div className="text-center">
+            <div 
+              className="absolute inset-0 flex items-center justify-center bg-[var(--bg)]/80 backdrop-blur-sm rounded-lg cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                resetGame()
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                resetGame()
+              }}
+            >
+              <div className="text-center pointer-events-none">
                 <p className="text-3xl font-bold text-accent mb-2">Game Over!</p>
                 <p className="text-xl text-[var(--text)] mb-1">Score: {score}</p>
                 {highScore > 0 && (
@@ -499,7 +514,11 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
                   </p>
                 )}
                 <p className="text-sm text-[var(--muted)]">
-                  Press <kbd className="px-2 py-1 bg-[var(--accent)]/20 rounded">SPACE</kbd> or <kbd className="px-2 py-1 bg-[var(--accent)]/20 rounded">CLICK</kbd> to restart
+                  <span className="hidden md:inline">Press <kbd className="px-2 py-1 bg-[var(--accent)]/20 rounded">SPACE</kbd> or </span>
+                  <kbd className="px-2 py-1 bg-[var(--accent)]/20 rounded">
+                    <span className="md:hidden">Tap</span>
+                    <span className="hidden md:inline">Click</span>
+                  </kbd>{' '}to restart
                 </p>
               </div>
             </div>

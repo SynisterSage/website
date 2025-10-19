@@ -48,12 +48,25 @@ const NotFound = () => {
               onClick={handleActivateGame}
               onTouchStart={handleActivateGame}
             >
-              <h1 className="text-9xl font-bold text-accent mb-4 hover:scale-105 transition-transform">
+              <motion.h1 
+                className="text-9xl font-bold text-accent mb-4 hover:scale-105 transition-transform relative"
+                animate={{
+                  textShadow: [
+                    '0 0 20px rgba(134, 96, 169, 0.5)',
+                    '0 0 40px rgba(134, 96, 169, 0.8)',
+                    '0 0 60px rgba(134, 96, 169, 1)',
+                    '0 0 40px rgba(134, 96, 169, 0.8)',
+                    '0 0 20px rgba(134, 96, 169, 0.5)',
+                  ],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
                 404
-              </h1>
-              <p className="text-sm text-[var(--muted)] animate-pulse">
-                Press <kbd className="px-2 py-1 bg-[var(--accent)]/20 rounded mx-1">SPACE</kbd> or tap to play
-              </p>
+              </motion.h1>
             </motion.div>
           ) : (
             <motion.div
