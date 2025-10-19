@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { projects } from '../data/projects'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
@@ -9,6 +9,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 const Home = () => {
   usePageTitle() // Use default site title for homepage
   const { triggerHaptic } = useHaptic()
+  const [isHovering, setIsHovering] = useState(false)
   
   // magnetic tilt for name: use local handlers (smoother via CSS transition)
   const nameRef = useRef<HTMLHeadingElement | null>(null)
@@ -68,6 +69,18 @@ const Home = () => {
     return () => cancelAnimationFrame(raf)
   }, [])
 
+  // Reset hover state on scroll (mobile/tablet)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isHovering) {
+        setIsHovering(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isHovering])
+
   return (
     <motion.main
       initial={{ opacity: 0 }}
@@ -89,14 +102,54 @@ const Home = () => {
 
         <motion.h1
           ref={nameRef}
-          className="text-5xl font-semibold text-accent mb-4 home-name"
+          className="text-5xl font-semibold text-accent mb-4 home-name relative inline-block cursor-pointer group"
           onPointerMove={handleNamePointerMove}
           onPointerLeave={handleNamePointerLeave}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          style={{
+            filter: isHovering ? 'brightness(1.3) saturate(1.2)' : 'brightness(1) saturate(1)',
+            transition: 'filter 0.3s ease',
+          }}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
         >
           {/* text content will be populated by effect (scramble -> reveal) */}
+          <motion.span
+            className="absolute inset-0 pointer-events-none hidden md:block"
+            initial={{ opacity: 0, scale: 1 }}
+            animate={isHovering ? {
+              opacity: [0, 0.3, 0],
+              scale: [1, 1.05, 1.1],
+            } : { opacity: 0, scale: 1 }}
+            transition={{
+              duration: 0.6,
+              repeat: isHovering ? Infinity : 0,
+              ease: "easeOut"
+            }}
+            style={{
+              background: 'radial-gradient(circle, rgba(167, 139, 250, 0.4) 0%, transparent 70%)',
+              filter: 'blur(20px)',
+            }}
+          />
+          {/* Mobile/Tablet: subtle pulse animation */}
+          <motion.span
+            className="absolute inset-0 pointer-events-none md:hidden"
+            animate={{
+              opacity: [0, 0.15, 0],
+              scale: [1, 1.02, 1],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            style={{
+              background: 'radial-gradient(circle, rgba(167, 139, 250, 0.3) 0%, transparent 70%)',
+              filter: 'blur(15px)',
+            }}
+          />
         </motion.h1>
         <motion.h2 
           className="text-xl text-gray-600 mb-6"
