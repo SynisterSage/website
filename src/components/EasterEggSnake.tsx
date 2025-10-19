@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trophy, Volume2, VolumeOff } from 'lucide-react';
 import { gameAudio } from '../utils/gameAudio';
-import { fetchLeaderboard as fetchLeaderboardFromService, submitScore as submitScoreToService, onLeaderboardUpdate } from '../lib/leaderboardService';
+import { fetchLeaderboard as fetchLeaderboardFromService, submitScore as submitScoreToService, onLeaderboardUpdate, clearLocalLeaderboard, isFirebaseAvailable } from '../lib/leaderboardService';
 
 interface Position {
   x: number;
@@ -106,15 +106,40 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
 
   // Fetch leaderboard on mount
   useEffect(() => {
+    console.log('[SnakeGame] Component mounted');
+    
+    // Check if Firebase is available
+    const firebaseAvailable = isFirebaseAvailable();
+    console.log('[SnakeGame] Firebase available:', firebaseAvailable);
+    
+    // Clear localStorage if Firebase is available to avoid conflicts
+    if (firebaseAvailable) {
+      console.log('[SnakeGame] Firebase is available - clearing localStorage to prevent conflicts');
+      clearLocalLeaderboard();
+    } else {
+      console.warn('[SnakeGame] Firebase NOT available - leaderboard will be local only (not shared across devices)');
+    }
+    
+    // Fetch initial leaderboard
     fetchLeaderboard();
     
     // Set up real-time listener if available
     const unsubscribe = onLeaderboardUpdate((entries) => {
+      console.log('[SnakeGame] Received real-time update with', entries.length, 'entries');
       setLeaderboard(entries as LeaderboardEntry[]);
     });
     
+    if (unsubscribe) {
+      console.log('[SnakeGame] Real-time listener active - leaderboard will update automatically');
+    } else {
+      console.log('[SnakeGame] Real-time listener not available, will use polling');
+    }
+    
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribe) {
+        console.log('[SnakeGame] Cleaning up real-time listener');
+        unsubscribe();
+      }
     };
   }, []);
 
@@ -131,10 +156,12 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
 
   const fetchLeaderboard = async () => {
     try {
+      console.log('[SnakeGame] Fetching leaderboard...');
       const entries = await fetchLeaderboardFromService();
+      console.log('[SnakeGame] Fetched', entries.length, 'entries');
       setLeaderboard(entries as LeaderboardEntry[]);
     } catch (error) {
-      console.error('Failed to fetch leaderboard:', error);
+      console.error('[SnakeGame] Failed to fetch leaderboard:', error);
     }
   };
 
@@ -143,21 +170,25 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
 
     setSubmittingScore(true);
     try {
+      console.log('[SnakeGame] Submitting score:', username.trim(), score);
+      
       // Save username to session
       sessionStorage.setItem('snakeUsername', username.trim());
 
       // Submit score using the service (which handles Firestore + fallback to localStorage)
       const updated = await submitScoreToService(username.trim(), score);
       
+      console.log('[SnakeGame] Score submission result:', updated ? 'Updated' : 'Not updated (score not higher)');
+      
       // Fetch and display the updated leaderboard
       await fetchLeaderboard();
       setShowUsernameInput(false);
       
       if (!updated) {
-        console.log('Score not submitted (not higher than existing score)');
+        console.log('[SnakeGame] Score not submitted (not higher than existing score)');
       }
     } catch (error) {
-      console.error('Failed to submit score:', error);
+      console.error('[SnakeGame] Failed to submit score:', error);
     } finally {
       setSubmittingScore(false);
     }

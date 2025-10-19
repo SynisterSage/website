@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Leaderboard Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f0f23;
+            color: #e0e0e0;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success {
+            background: #1a4d2e;
+            border: 2px solid #4ade80;
+            color: #4ade80;
+        }
+        .error {
+            background: #4d1a1a;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+        }
+        .warning {
+            background: #4d3d1a;
+            border: 2px solid #fbbf24;
+            color: #fbbf24;
+        }
+        .leaderboard {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .entry {
+            padding: 10px;
+            margin: 5px 0;
+            background: #16213e;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        .console div {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Leaderboard Test</h1>
+    
+    <div id="status"></div>
+    
+    <div>
+        <button onclick="testConnection()">Test Firebase Connection</button>
+        <button onclick="fetchLeaderboard()">Fetch Leaderboard</button>
+        <button onclick="clearLocal()">Clear localStorage</button>
+    </div>
+    
+    <div class="leaderboard" id="leaderboard">
+        <h3>Leaderboard</h3>
+        <div id="entries">Loading...</div>
+    </div>
+    
+    <div class="console" id="console">
+        <strong>Console Output:</strong>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase config from your .env
+        const firebaseConfig = {
+            apiKey: "AIzaSyCXeTH_iTmBkdXfEHsGv5kpFrGGHxLjBhM",
+            authDomain: "website-portfolio-72419.firebaseapp.com",
+            projectId: "website-portfolio-72419",
+            storageBucket: "website-portfolio-72419.firebasestorage.app",
+            messagingSenderId: "55171404175",
+            appId: "1:55171404175:web:0bed5bf90550f0ef79bbfa"
+        };
+
+        let app, db;
+        
+        function log(message, type = 'info') {
+            const consoleDiv = document.getElementById('console');
+            const color = type === 'error' ? '#ff4444' : type === 'success' ? '#44ff44' : type === 'warning' ? '#ffaa44' : '#0f0';
+            consoleDiv.innerHTML += `<div style="color: ${color}">[${new Date().toLocaleTimeString()}] ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+
+        window.testConnection = async function() {
+            try {
+                log('Testing Firebase connection...', 'info');
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                log('✅ Firebase initialized successfully!', 'success');
+                
+                document.getElementById('status').innerHTML = 
+                    '<div class="status success">✅ Firebase Connected - Leaderboard is SHARED across all devices</div>';
+                
+                // Auto-fetch leaderboard
+                await fetchLeaderboard();
+            } catch (error) {
+                log('❌ Firebase initialization failed: ' + error.message, 'error');
+                document.getElementById('status').innerHTML = 
+                    '<div class="status error">❌ Firebase Failed - Check console for details</div>';
+            }
+        };
+
+        window.fetchLeaderboard = async function() {
+            if (!db) {
+                log('⚠️  Firebase not initialized. Click "Test Firebase Connection" first.', 'warning');
+                return;
+            }
+
+            try {
+                log('Fetching leaderboard from Firestore...', 'info');
+                const leaderboardRef = collection(db, 'snakeLeaderboard');
+                const q = query(leaderboardRef, orderBy('score', 'desc'), limit(10));
+                const snapshot = await getDocs(q);
+                
+                const entries = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                log(`✅ Fetched ${entries.length} entries from Firebase`, 'success');
+                
+                const entriesDiv = document.getElementById('entries');
+                if (entries.length === 0) {
+                    entriesDiv.innerHTML = '<div style="color: #888">No scores yet. Play the snake game to add one!</div>';
+                } else {
+                    entriesDiv.innerHTML = entries.map((entry, index) => `
+                        <div class="entry">
+                            <span>${index + 1}. ${entry.username}</span>
+                            <span>${entry.score} points</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                log('❌ Failed to fetch leaderboard: ' + error.message, 'error');
+                if (error.code === 'permission-denied') {
+                    log('⚠️  PERMISSION DENIED - Check Firestore security rules!', 'warning');
+                    document.getElementById('status').innerHTML = 
+                        '<div class="status error">❌ Permission Denied - Update Firestore rules (see FIRESTORE_RULES.md)</div>';
+                }
+            }
+        };
+
+        window.clearLocal = function() {
+            localStorage.removeItem('snakeLeaderboard');
+            log('🗑️  Cleared localStorage', 'success');
+            alert('localStorage cleared! Now all devices will use Firebase only.');
+        };
+
+        // Auto-test on load
+        window.onload = () => {
+            log('Page loaded. Testing Firebase...', 'info');
+            testConnection();
+        };
+    </script>
+</body>
+</html>

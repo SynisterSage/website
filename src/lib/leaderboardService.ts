@@ -10,10 +10,31 @@ export interface SnakeLeaderboardEntry {
 }
 
 /**
+ * Clear localStorage leaderboard data
+ * Use this to force all devices to use Firebase only
+ */
+export const clearLocalLeaderboard = (): void => {
+  try {
+    localStorage.removeItem('snakeLeaderboard');
+    console.log('[Leaderboard] Cleared local leaderboard data');
+  } catch (error) {
+    console.error('[Leaderboard] Failed to clear local leaderboard:', error);
+  }
+};
+
+/**
+ * Check if Firebase is available
+ */
+export const isFirebaseAvailable = (): boolean => {
+  return !!db;
+};
+
+/**
  * Fetch top 10 leaderboard entries from Firestore
  */
 export const fetchLeaderboard = async (): Promise<SnakeLeaderboardEntry[]> => {
   if (!db) {
+    console.log('[Leaderboard] Firebase not initialized, using localStorage');
     // Fallback to localStorage if Firebase not initialized
     return getLocalLeaderboard();
   }
@@ -27,12 +48,15 @@ export const fetchLeaderboard = async (): Promise<SnakeLeaderboardEntry[]> => {
     );
     
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    const entries = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     })) as SnakeLeaderboardEntry[];
+    
+    console.log(`[Leaderboard] Fetched ${entries.length} entries from Firestore`);
+    return entries;
   } catch (error) {
-    console.error('Failed to fetch leaderboard from Firestore:', error);
+    console.error('[Leaderboard] Failed to fetch from Firestore:', error);
     // Fallback to localStorage
     return getLocalLeaderboard();
   }
@@ -47,6 +71,7 @@ export const submitScore = async (
   userId?: string
 ): Promise<boolean> => {
   if (!db) {
+    console.log('[Leaderboard] Firebase not initialized, using localStorage');
     // Fallback to localStorage
     return submitLocalScore(username, score, userId);
   }
@@ -67,6 +92,7 @@ export const submitScore = async (
     // Only update if new score is higher
     if (snapshot.empty) {
       // New entry
+      console.log(`[Leaderboard] Adding new entry for ${username} with score ${score}`);
       await addDoc(leaderboardRef, {
         username: username.trim(),
         score,
@@ -80,16 +106,18 @@ export const submitScore = async (
       
       if (score > existingData.score) {
         // Update with higher score
+        console.log(`[Leaderboard] Updating ${username} from ${existingData.score} to ${score}`);
         await updateDoc(doc(leaderboardRef, existingDoc.id), {
           score,
           timestamp: Date.now()
         });
         return true;
       }
+      console.log(`[Leaderboard] Score ${score} not higher than existing ${existingData.score}`);
       return false; // Score not higher, didn't update
     }
   } catch (error) {
-    console.error('Failed to submit score to Firestore:', error);
+    console.error('[Leaderboard] Failed to submit score to Firestore:', error);
     // Fallback to localStorage
     return submitLocalScore(username, score, userId);
   }
@@ -102,6 +130,7 @@ export const onLeaderboardUpdate = (
   callback: (entries: SnakeLeaderboardEntry[]) => void
 ): (() => void) | null => {
   if (!db) {
+    console.log('[Leaderboard] Firebase not initialized, real-time updates not available');
     return null; // Real-time updates not available without Firebase
   }
 
@@ -113,28 +142,41 @@ export const onLeaderboardUpdate = (
       limit(10)
     );
     
-    const unsubscribe = onSnapshot(q, (snapshot: any) => {
-      const entries = snapshot.docs.map((doc: any) => ({
-        id: doc.id,
-        ...doc.data()
-      })) as SnakeLeaderboardEntry[];
-      callback(entries);
-    });
+    console.log('[Leaderboard] Setting up real-time listener');
+    const unsubscribe = onSnapshot(q, 
+      (snapshot: any) => {
+        const entries = snapshot.docs.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data()
+        })) as SnakeLeaderboardEntry[];
+        console.log(`[Leaderboard] Real-time update: ${entries.length} entries`);
+        callback(entries);
+      },
+      (error: any) => {
+        console.error('[Leaderboard] Real-time listener error:', error);
+      }
+    );
     
     return unsubscribe;
   } catch (error) {
-    console.error('Failed to set up real-time leaderboard updates:', error);
+    console.error('[Leaderboard] Failed to set up real-time leaderboard updates:', error);
     return null;
   }
 };
 
 /**
  * Get leaderboard from localStorage (fallback)
+ * WARNING: This is only used when Firebase is not available
+ * Each device will have its own leaderboard!
  */
 const getLocalLeaderboard = (): SnakeLeaderboardEntry[] => {
+  console.warn('[Leaderboard] Using localStorage - scores will NOT sync across devices!');
   try {
     const localScores = localStorage.getItem('snakeLeaderboard');
-    if (!localScores) return [];
+    if (!localScores) {
+      console.log('[Leaderboard] No local scores found');
+      return [];
+    }
     
     const parsed = JSON.parse(localScores);
     
@@ -150,17 +192,22 @@ const getLocalLeaderboard = (): SnakeLeaderboardEntry[] => {
       return acc;
     }, []);
     
-    return uniqueScores.sort((a: SnakeLeaderboardEntry, b: SnakeLeaderboardEntry) => b.score - a.score).slice(0, 10);
+    const sorted = uniqueScores.sort((a: SnakeLeaderboardEntry, b: SnakeLeaderboardEntry) => b.score - a.score).slice(0, 10);
+    console.log(`[Leaderboard] Returning ${sorted.length} entries from localStorage`);
+    return sorted;
   } catch (error) {
-    console.error('Failed to get local leaderboard:', error);
+    console.error('[Leaderboard] Failed to get local leaderboard:', error);
     return [];
   }
 };
 
 /**
  * Submit score to localStorage (fallback)
+ * WARNING: This is only used when Firebase is not available
+ * Each device will have its own leaderboard!
  */
 const submitLocalScore = (username: string, score: number, userId?: string): boolean => {
+  console.warn('[Leaderboard] Submitting to localStorage - score will NOT sync across devices!');
   try {
     const localScores = localStorage.getItem('snakeLeaderboard');
     let scores: SnakeLeaderboardEntry[] = localScores ? JSON.parse(localScores) : [];
@@ -187,12 +234,14 @@ const submitLocalScore = (username: string, score: number, userId?: string): boo
       scores = scores.slice(0, 50);
       
       localStorage.setItem('snakeLeaderboard', JSON.stringify(scores));
+      console.log('[Leaderboard] Saved to localStorage:', username, score);
       return true;
     }
     
+    console.log('[Leaderboard] Score not saved to localStorage (not higher)');
     return false;
   } catch (error) {
-    console.error('Failed to submit local score:', error);
+    console.error('[Leaderboard] Failed to submit local score:', error);
     return false;
   }
 };

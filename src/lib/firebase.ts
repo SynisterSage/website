@@ -20,14 +20,26 @@ let app: FirebaseApp | undefined;
 let db: Firestore | undefined;
 let auth: Auth | undefined;
 
+// Log Firebase config status (without exposing full keys)
+console.log('[Firebase] Initializing with config:', {
+  hasApiKey: !!firebaseConfig.apiKey,
+  hasProjectId: !!firebaseConfig.projectId,
+  projectId: firebaseConfig.projectId,
+  hasDomain: !!firebaseConfig.authDomain,
+});
+
 try {
-  if (firebaseConfig.projectId) {
+  if (firebaseConfig.apiKey && firebaseConfig.projectId) {
     app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     auth = getAuth(app);
+    console.log('[Firebase] Successfully initialized');
+  } else {
+    console.warn('[Firebase] Missing required configuration. Leaderboard will use localStorage fallback.');
   }
 } catch (error) {
-  console.error('Failed to initialize Firebase:', error);
+  console.error('[Firebase] Failed to initialize:', error);
+  console.warn('[Firebase] Leaderboard will use localStorage fallback.');
 }
 
 export { db, auth, app };
