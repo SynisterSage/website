@@ -1,4 +1,30 @@
+# Security Policy for aferguson.art
+# If you discover a security vulnerability, please report it responsibly.
+
 Contact: mailto:afergyy@gmail.com
 Expires: 2026-12-31T23:59:59.000Z
 Preferred-Languages: en
 Canonical: https://aferguson.art/.well-known/security.txt
+
+# Encryption key for secure communications
+Encryption: https://aferguson.art/.well-known/pgp-key.txt
+
+# Security acknowledgments page (optional - can be created later)
+# Acknowledgments: https://aferguson.art/security/hall-of-fame
+
+# Policy documentation
+Policy: https://aferguson.art/.well-known/security-policy.txt
+
+# Reporting Guidelines:
+# 1. Provide detailed information about the vulnerability
+# 2. Include steps to reproduce the issue
+# 3. Do not publicly disclose until patch is released
+# 4. Allow reasonable time for remediation (90 days)
+# 5. Do not exploit vulnerabilities for personal gain
+
+# Out of Scope:
+# - Social engineering attacks
+# - Physical attacks against property or data centers
+# - Denial of Service (DoS/DDoS) attacks
+# - Spam or social media account takeovers
+# - Reports from automated tools without validation

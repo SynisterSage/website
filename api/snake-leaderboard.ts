@@ -1,4 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { 
+  checkRateLimit, 
+  getClientIdentifier, 
+  sanitizeString,
+  setSecurityHeaders,
+  setCorsHeaders 
+} from './_security';
 
 interface LeaderboardEntry {
   username: string;
@@ -12,13 +19,30 @@ interface LeaderboardEntry {
 let leaderboard: LeaderboardEntry[] = [];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Set security headers
+  setSecurityHeaders(res);
+  setCorsHeaders(res);
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+  
+  // Rate limiting
+  const clientId = getClientIdentifier(req);
+  const rateLimit = checkRateLimit(clientId, { 
+    windowMs: 60000, 
+    max: req.method === 'GET' ? 30 : 10 // More lenient for GET, stricter for POST
+  });
+  
+  res.setHeader('X-RateLimit-Limit', req.method === 'GET' ? '30' : '10');
+  res.setHeader('X-RateLimit-Remaining', rateLimit.remaining.toString());
+  
+  if (!rateLimit.allowed) {
+    res.setHeader('Retry-After', rateLimit.retryAfter?.toString() || '60');
+    return res.status(429).json({ 
+      error: 'Too many requests',
+      retryAfter: rateLimit.retryAfter 
+    });
   }
 
   if (req.method === 'GET') {
@@ -33,30 +57,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     const { username, score } = req.body;
 
-    // Validate input
-    if (!username || typeof username !== 'string' || username.length < 1 || username.length > 20) {
+    // Validate and sanitize input
+    const sanitizedUsername = sanitizeString(username, 20);
+    
+    if (!sanitizedUsername || sanitizedUsername.length < 1) {
       return res.status(400).json({ error: 'Invalid username. Must be 1-20 characters.' });
     }
 
-    if (typeof score !== 'number' || score < 0 || score > 100000) {
-      return res.status(400).json({ error: 'Invalid score.' });
+    if (typeof score !== 'number' || score < 0 || score > 100000 || !Number.isInteger(score)) {
+      return res.status(400).json({ error: 'Invalid score. Must be an integer between 0 and 100000.' });
     }
 
     // Check if user already has a score
     const existingEntry = leaderboard.find(
-      entry => entry.username.toLowerCase() === username.trim().toLowerCase()
+      entry => entry.username.toLowerCase() === sanitizedUsername.toLowerCase()
     );
 
     // Only update if new score is higher OR user doesn't exist
     if (!existingEntry || score > existingEntry.score) {
       // Remove any existing entries for this user
       leaderboard = leaderboard.filter(
-        entry => entry.username.toLowerCase() !== username.trim().toLowerCase()
+        entry => entry.username.toLowerCase() !== sanitizedUsername.toLowerCase()
       );
 
       // Create new entry
       const entry: LeaderboardEntry = {
-        username: username.trim(),
+        username: sanitizedUsername,
         score,
         timestamp: Date.now(),
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

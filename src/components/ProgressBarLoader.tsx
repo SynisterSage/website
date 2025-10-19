@@ -43,6 +43,10 @@ export default function ProgressBarLoader({ duration = 3500, onComplete, assets 
   const holding = useRef(false)
   const holdStart = useRef<number | null>(null)
   const skipOverride = useRef(false)
+  
+  // Magnetic tilt state for logo
+  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
+  const logoRef = useRef<HTMLDivElement>(null)
 
   // Asset preload state
   const [assetCounts, setAssetCounts] = useState({ loaded: 0, total: 0 })
@@ -175,6 +179,50 @@ export default function ProgressBarLoader({ duration = 3500, onComplete, assets 
     return () => { cancelled = true }
   }, [filteredAssets.join('|')])
 
+  // Magnetic tilt effect for logo
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!logoRef.current) return
+
+      const logo = logoRef.current
+      const rect = logo.getBoundingClientRect()
+      const logoCenterX = rect.left + rect.width / 2
+      const logoCenterY = rect.top + rect.height / 2
+
+      // Calculate distance from cursor to logo center
+      const deltaX = e.clientX - logoCenterX
+      const deltaY = e.clientY - logoCenterY
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+      // Magnetic effect - stronger when closer
+      const maxDistance = 400 // pixels
+      const magneticStrength = Math.max(0, 1 - distance / maxDistance)
+
+      // Tilt angles (inverted for natural feel)
+      const maxTilt = 25 // degrees
+      const rotateY = (deltaX / rect.width) * maxTilt * magneticStrength
+      const rotateX = -(deltaY / rect.height) * maxTilt * magneticStrength
+
+      // Slight scale on hover
+      const scale = 1 + (magneticStrength * 0.05)
+
+      setTilt({ rotateX, rotateY, scale })
+    }
+
+    const handleMouseLeave = () => {
+      // Reset to neutral position
+      setTilt({ rotateX: 0, rotateY: 0, scale: 1 })
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseleave', handleMouseLeave)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [])
+
   const containerStyle: React.CSSProperties = useMemo(() => ({
     position: 'fixed', inset: 0, display: 'grid', placeItems: 'center', zIndex: 9999,
     padding: '24px',
@@ -186,10 +234,27 @@ export default function ProgressBarLoader({ duration = 3500, onComplete, assets 
         <div className="w-full max-w-xl flex flex-col items-center gap-8">
           {/* AF Logo - above the card */}
           <motion.div
+            ref={logoRef}
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            animate={{ 
+              opacity: 1, 
+              scale: tilt.scale, 
+              y: 0,
+              rotateX: tilt.rotateX,
+              rotateY: tilt.rotateY,
+            }}
+            transition={{ 
+              opacity: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+              y: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+              rotateX: { type: 'spring', stiffness: 200, damping: 20 },
+              rotateY: { type: 'spring', stiffness: 200, damping: 20 },
+              scale: { type: 'spring', stiffness: 300, damping: 25 },
+            }}
             className="splash-logo-container"
+            style={{
+              transformStyle: 'preserve-3d',
+              perspective: 1000,
+            }}
           >
             <img 
               src="/icons/logo.svg" 
@@ -197,6 +262,7 @@ export default function ProgressBarLoader({ duration = 3500, onComplete, assets 
               className="splash-logo"
               style={{
                 filter: `drop-shadow(0 0 20px ${accent}40) drop-shadow(0 0 40px ${accent}20)`,
+                transformStyle: 'preserve-3d',
               }}
             />
           </motion.div>

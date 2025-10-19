@@ -226,10 +226,20 @@
      and ensure root and its immediate child fill the viewport height. This prevents
      small white strips from appearing in some browsers when the layout doesn't
      occupy the full viewport. */
-  html, body {
+  html {
     background-color: var(--bg) !important;
     margin: 0 !important;
     height: 100% !important;
+    /* Fix mobile overscroll showing white background */
+    overflow-x: hidden;
+  }
+  
+  body {
+    background-color: var(--bg) !important;
+    margin: 0 !important;
+    min-height: 100% !important;
+    /* Extend background beyond viewport for mobile bounce effect */
+    background-attachment: fixed;
   }
 
   #root {
