@@ -105,7 +105,7 @@ export default function PreferencesNotice() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="fixed top-6 right-6 max-w-sm z-[100] preferences-notice"
+          className="fixed right-4 max-w-sm z-50 toast-notification"
         >
           <div
             className="p-4 rounded-lg border backdrop-blur-md"

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { projects } from '../data/projects'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import TiltCard from '../components/TiltCard'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
@@ -11,11 +11,23 @@ const Projects = () => {
   usePageTitle('Projects')
   const { triggerHaptic } = useHaptic()
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('All')
 
-  const filteredProjects = projects.filter(project => 
-    project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  // Extract all unique categories from projects
+  const categories = useMemo(() => {
+    const allCategories = projects.flatMap(project => project.categories)
+    const uniqueCategories = Array.from(new Set(allCategories)).sort()
+    return ['All', ...uniqueCategories]
+  }, [])
+
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    const matchesCategory = selectedCategory === 'All' || project.categories.includes(selectedCategory)
+    
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <motion.main
@@ -35,7 +47,7 @@ const Projects = () => {
 
         {/* Search Bar */}
         <motion.div 
-          className="mb-8"
+          className="mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -56,6 +68,81 @@ const Projects = () => {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+          </div>
+        </motion.div>
+
+        {/* Category Filter - Horizontal Scroll */}
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <svg className="w-4 h-4 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <span className="text-sm font-medium text-[var(--muted)]">Filter by Category</span>
+          </div>
+          <div 
+            className="project-category-scroll"
+            onWheel={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              const container = e.currentTarget.querySelector('.project-category-filters')
+              if (container) {
+                container.scrollLeft += e.deltaY
+              }
+            }}
+          >
+            <div 
+              className="project-category-filters"
+              onMouseDown={(e) => {
+                const container = e.currentTarget
+                const startX = e.pageX - container.offsetLeft
+                const scrollLeft = container.scrollLeft
+                let isDragging = false
+
+                const handleMouseMove = (e: MouseEvent) => {
+                  isDragging = true
+                  const x = e.pageX - container.offsetLeft
+                  const walk = (x - startX) * 2
+                  container.scrollLeft = scrollLeft - walk
+                  container.style.cursor = 'grabbing'
+                  container.style.userSelect = 'none'
+                }
+
+                const handleMouseUp = () => {
+                  container.style.cursor = 'grab'
+                  container.style.userSelect = 'auto'
+                  document.removeEventListener('mousemove', handleMouseMove)
+                  document.removeEventListener('mouseup', handleMouseUp)
+                  
+                  // Small delay to prevent click event if dragging
+                  if (isDragging) {
+                    setTimeout(() => { isDragging = false }, 50)
+                  }
+                }
+
+                container.style.cursor = 'grabbing'
+                document.addEventListener('mousemove', handleMouseMove)
+                document.addEventListener('mouseup', handleMouseUp)
+              }}
+            >
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => {
+                    triggerHaptic('click')
+                    // Toggle behavior: clicking same category goes back to All
+                    setSelectedCategory(selectedCategory === category ? 'All' : category)
+                  }}
+                  className={`project-category-pill ${selectedCategory === category ? 'active' : ''}`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
         </motion.div>
 
