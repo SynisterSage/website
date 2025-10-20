@@ -1,6 +1,5 @@
-import { useState, useContext, useRef } from 'react'
+import { useState, useContext, useRef, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Menu, X, Moon, Sun, Home as HomeIcon, FolderOpen, Mail as MailIcon, User, Briefcase } from 'lucide-react'
 import { ThemeContext } from '../context/ThemeProvider'
 import { useHaptic } from '../hooks/useHaptic'
@@ -8,15 +7,66 @@ import { useHaptic } from '../hooks/useHaptic'
 const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => {
   const { triggerHaptic } = useHaptic()
   const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   
   // Easter egg: track rapid clicks
   const [clickCount, setClickCount] = useState(0)
   const clickTimeoutRef = useRef<number | null>(null)
+  
+  // Lock body scroll when menu is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY
+      document.body.classList.add('menu-open')
+      document.body.style.top = `-${scrollY}px`
+    } else {
+      // Restore scroll position
+      const scrollY = document.body.style.top
+      document.body.classList.remove('menu-open')
+      document.body.style.top = ''
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1)
+      }
+    }
+    
+    return () => {
+      document.body.classList.remove('menu-open')
+      document.body.style.top = ''
+    }
+  }, [isOpen])
 
-  const menuVariants = {
-    open: { opacity: 1, y: 0, transition: { stiffness: 200 } },
-    closed: { opacity: 0, y: -10, transition: { stiffness: 200 } },
-  }
+  // Click outside to close menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node
+      
+      // Check if click is outside both the menu and the menu button
+      if (
+        isOpen && 
+        menuRef.current && 
+        !menuRef.current.contains(target) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(target)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      // Small delay to prevent immediate close when opening
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside)
+        document.addEventListener('touchstart', handleClickOutside)
+      }, 100)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [isOpen])
 
   const { theme, toggle } = useContext(ThemeContext)
   // spotlight toggle handled in Sidebar for desktop
@@ -76,8 +126,9 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
   }
 
   return (
-    <nav className="fixed w-full z-60 px-6 py-3 mobile-nav glass" style={{ color: 'var(--mobile-text)' }}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <nav ref={menuRef} className="fixed w-full z-[1200] mobile-nav-container">
+      <div className="mobile-nav glass px-6 py-3" style={{ color: 'var(--mobile-text)' }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Left: brand */}
         <Link
           to="/"
@@ -107,28 +158,33 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
             {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
           </button>
 
-          <motion.button
+          <button
+            ref={menuButtonRef}
             onClick={() => {
               triggerHaptic('click')
               setIsOpen(!isOpen)
             }}
-            whileTap={{ scale: 0.95 }}
             aria-label="Toggle menu"
             style={{ zIndex: 120 }}
-            className="w-10 h-10 rounded-md flex items-center justify-center border border-transparent hover:border-white/6"
+            className="w-10 h-10 rounded-md flex items-center justify-center border border-transparent hover:border-white/6 transition-transform active:scale-95"
           >
             {isOpen ? <X size={22} /> : <Menu size={22} />}
-          </motion.button>
+          </button>
         </div>
-
+        </div>
       </div>
 
-      <motion.div
-        initial={isOpen ? 'open' : 'closed'}
-        animate={isOpen ? 'open' : 'closed'}
-        variants={menuVariants}
+      <div 
+        ref={menuRef}
         className={`mobile-menu ${isOpen ? 'open' : 'closed'}`}
-        style={{ color: 'var(--mobile-text)', zIndex: 110 }}
+        style={{ color: 'var(--mobile-text)' }}
+        onClick={(e) => {
+          // Close menu if clicking the backdrop (not the menu content)
+          if (e.target === e.currentTarget) {
+            triggerHaptic('click')
+            setIsOpen(false)
+          }
+        }}
       >
         <div className="mobile-menu-inner">
           <NavLink onClick={() => { triggerHaptic('click'); setIsOpen(false) }} to="/" className={({isActive}) => `mobile-menu-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--text-nav)' }}>
@@ -173,7 +229,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
             <span>Instagram</span>
           </a>
         </div>
-      </motion.div>
+      </div>
     </nav>
   )
 }

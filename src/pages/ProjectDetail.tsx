@@ -6,6 +6,8 @@ import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { logProjectView } from '../utils/analytics'
+import LikeButton from '../components/LikeButton'
+import ShareButton from '../components/ShareButton'
 
 const ProjectDetail = () => {
   const { triggerHaptic } = useHaptic()
@@ -75,15 +77,21 @@ const ProjectDetail = () => {
           </Link>
         </motion.div>
 
-        {/* Project Title */}
-        <motion.h1
+        {/* Project Title with Like and Share Buttons */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-4xl md:text-6xl font-bold text-accent mb-8"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
         >
-          {project.title}
-        </motion.h1>
+          <h1 className="text-4xl md:text-6xl font-bold text-accent">
+            {project.title}
+          </h1>
+          <div className="flex items-center gap-3 self-start sm:self-center">
+            <LikeButton projectId={project.id} />
+            <ShareButton projectTitle={project.title} projectId={project.id} />
+          </div>
+        </motion.div>
 
         {/* Project Metadata */}
         <motion.div

@@ -84,6 +84,8 @@
   padding-bottom: 12px;
   display: block;
   width: calc(100% - var(--sidebar-width, 18rem));
+  position: relative;
+  z-index: 30;
 }
 
 .has-collapsed-sidebar .footer-main { margin-left: 72px !important; width: calc(100% - 72px); }
@@ -96,15 +98,44 @@
   .has-expanded-sidebar .footer-main {
     margin-left: 0 !important;
     width: 100% !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding-left: 1.25rem !important; /* Match content-column padding */
+    padding-right: 1.5rem !important; /* Match content-column padding */
+    padding-bottom: 2rem !important; /* Extra padding for mobile */
+    position: relative;
+    z-index: 30;
+    clear: both;
   }
   /* align footer-content better on narrow screens */
   .footer-content { flex-direction: column; gap: 6px; align-items: flex-start; }
 }
 
+/* Tablet screens - match the larger padding */
+@media (min-width: 810px) and (max-width: 1199px) {
+  .footer-main,
+  .has-collapsed-sidebar .footer-main,
+  .has-expanded-sidebar .footer-main {
+    padding-left: 0rem !important; /* Match content-column padding on tablets */
+    padding-right: 3rem !important;
+  }
+}
+
+/* Smaller mobile screens - match the reduced padding */
+@media (max-width: 809px) {
+  .footer-main,
+  .has-collapsed-sidebar .footer-main,
+  .has-expanded-sidebar .footer-main {
+    padding-left: 0.875rem !important; /* Match content-column padding on small screens */
+    padding-right: 1rem !important;
+  }
+}
+
   /* Keep dotted line consistent */
-  .dotted-line { border-top: 2px dotted var(--border); margin: 0; }
+  .dotted-line { 
+    border-top: 2px dotted var(--border); 
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
 
   /* Section dividers: when used inside page content (content-column / page-pad)
      ensure consistent vertical spacing. Footer dotted-line intentionally left
@@ -232,6 +263,9 @@
     height: 100% !important;
     /* Fix mobile overscroll showing white background */
     overflow-x: hidden;
+    /* iOS Safari specific fixes for smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
   }
   
   body {
@@ -240,15 +274,31 @@
     min-height: 100% !important;
     /* Extend background beyond viewport for mobile bounce effect */
     background-attachment: fixed;
+    /* iOS Safari specific fixes */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+    touch-action: pan-y;
+    position: relative;
+  }
+  
+  /* Prevent body scroll when mobile menu is open */
+  body.menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
   }
 
   #root {
     min-height: 100vh !important;
+    min-height: 100dvh !important; /* Use dynamic viewport height for mobile */
+    position: relative;
   }
 
   /* Sometimes an app mounts a top-level wrapper under #root; make sure it fills too */
   #root > * {
     min-height: 100vh !important;
+    min-height: 100dvh !important; /* Use dynamic viewport height for mobile */
   }
 
   /* Light theme */
@@ -449,9 +499,26 @@
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: margin-left;
     min-height: calc(100vh - var(--nav-height) - 120px); /* ensure footer sits at bottom consistently */
+    min-height: calc(100dvh - var(--nav-height) - 120px); /* Use dynamic viewport height for mobile */
     display: flex;
     flex-direction: column;
     position: relative; /* create stacking context for grid pseudo-element */
+    /* iOS Safari specific fixes */
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+  
+  /* Mobile/tablet specific fixes for smooth scrolling */
+  @media (max-width: 1199px) {
+    .main-content {
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      min-height: calc(100vh - var(--nav-height));
+      min-height: calc(100dvh - var(--nav-height));
+    }
   }
 
   /* Subtle grid overlay behind page content (not on the sidebar). Uses a fixed pseudo element so it doesn't scroll separately. */
@@ -469,6 +536,7 @@
     left: var(--sidebar-width, 18rem);
     width: calc(100% - var(--sidebar-width, 18rem));
     height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height for mobile */
     pointer-events: none;
     z-index: -1; /* behind content; lowered so the spotlight overlay can sit between grid and content */
     background-image:
@@ -489,6 +557,8 @@
     background-repeat: repeat;
     mix-blend-mode: overlay;
     opacity: 1;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   /* Ensure page content sits above the grid overlay */
@@ -512,6 +582,7 @@
     left: var(--sidebar-width, 18rem);
     width: calc(100% - var(--sidebar-width, 18rem));
     height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height for mobile */
     pointer-events: none;
     z-index: 0; /* between grid (-1) and content (1) */
     opacity: 0; /* toggled via JS to fade in/out */
@@ -532,6 +603,8 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.01), 0 6px 18px rgba(0,0,0,0.05);
     will-change: opacity, background-position;
     backdrop-filter: none;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   .has-collapsed-sidebar .grid-spotlight {
@@ -556,6 +629,7 @@
     left: var(--sidebar-width, 18rem);
     width: calc(100% - var(--sidebar-width, 18rem));
     height: 100vh;
+    height: 100dvh; /* Use dynamic viewport height for mobile */
     pointer-events: none;
     z-index: 0; /* between grid (-1) and content (1) */
     opacity: 0;
@@ -583,6 +657,8 @@
   mask-image: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0,0,0,1) 0px, rgba(0,0,0,0.95) 28px, rgba(0,0,0,0) 96px);
   backdrop-filter: blur(2px) saturate(1.02);
     opacity: 0;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   .has-collapsed-sidebar .grid-lines-highlight {
@@ -1321,13 +1397,35 @@
   }
 
   .stack-item {
-    transition: transform 180ms ease, box-shadow 180ms ease;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
     border: 2px dotted var(--border);
+    min-width: 0;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .stack-item > div {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .stack-item .font-medium,
+  .stack-item .text-sm {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .stack-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    border-color: var(--accent);
+  }
+
+  .stack-item:active {
+    transform: translateY(0);
   }
 
   @media (min-width: 768px) {
@@ -1711,6 +1809,10 @@
     background: var(--glass-bg);
     border-bottom: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow-sm);
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .mobile-menu {
@@ -1721,12 +1823,39 @@
     /* opaque panel so content underneath doesn't visually bleed through */
     bottom: 0;
     height: calc(100vh - var(--nav-height));
+    height: calc(100dvh - var(--nav-height)); /* Use dynamic viewport height for mobile */
     background: color-mix(in srgb, var(--nav-bg) 92%, rgba(255,255,255,0.02) 8%);
     padding: 1.25rem 1rem;
-    display: none;
     border-bottom: none;
     box-shadow: 0 18px 48px rgba(0,0,0,0.18);
     z-index: 1200;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* Smooth backdrop animation */
+    opacity: 0;
+    visibility: hidden;
+    backdrop-filter: blur(0px);
+    transition: 
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-menu.open {
+    opacity: 1;
+    visibility: visible;
+    backdrop-filter: blur(8px);
+  }
+
+  .mobile-menu.closed {
+    opacity: 0;
+    visibility: hidden;
+    backdrop-filter: blur(0px);
+    pointer-events: none;
   }
 
   /* Reusable page padding utility: keeps top and bottom spacing consistent
@@ -1758,27 +1887,6 @@
     box-shadow: 0 -2px 12px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
   }
 
-  .mobile-menu.open {
-    display: block;
-  }
-
-  /* animate mobile menu open/close with subtle slide */
-  .mobile-menu {
-    transition: opacity 220ms ease, transform 220ms cubic-bezier(.2,.9,.2,1);
-  }
-  .mobile-menu.closed {
-    opacity: 0;
-    transform: translateY(-6px);
-    pointer-events: none;
-    display: none; /* fallback when JS toggles */
-  }
-  .mobile-menu.open {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-    display: block;
-  }
-
   /* Box the mobile menu contents so it appears as a panel instead of fully transparent */
   .mobile-menu-inner {
     background: var(--mobile-nav-bg);
@@ -1786,6 +1894,18 @@
     padding: 1rem;
     box-shadow: var(--glass-shadow-sm);
     border: 1px solid var(--glass-border);
+    /* Slide up animation for menu box */
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: 
+      opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+      transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .mobile-menu.open .mobile-menu-inner {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition-delay: 0.1s;
   }
   
   .mobile-menu-inner {
@@ -1800,7 +1920,7 @@
   .mobile-menu-link {
     padding: 0.9rem 1rem;
     font-weight: 500;
-    transition: all 160ms ease;
+    transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
     text-align: left;
     width: 100%;
     display: flex;
@@ -1810,17 +1930,56 @@
     background: transparent; /* no filled boxes for inactive items */
     color: var(--text);
     border-radius: 8px;
+    /* Staggered fade-in animation */
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  /* Staggered animation delays for each menu item */
+  .mobile-menu.open .mobile-menu-link:nth-child(1) {
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s forwards;
+  }
+  .mobile-menu.open .mobile-menu-link:nth-child(2) {
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
+  }
+  .mobile-menu.open .mobile-menu-link:nth-child(3) {
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s forwards;
+  }
+  .mobile-menu.open .mobile-menu-link:nth-child(4) {
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+  }
+  .mobile-menu.open .mobile-menu-link:nth-child(5) {
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s forwards;
+  }
+  .mobile-menu.open .mobile-menu-link:nth-child(6) {
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s forwards;
+  }
+  .mobile-menu.open .mobile-menu-link:nth-child(7) {
+    animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s forwards;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
   
   .mobile-menu-link:hover {
-    background: color-mix(in srgb, var(--accent) 6%, transparent);
-    transform: translateX(6px);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    transform: translateX(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
 
   .mobile-menu-link.active {
     border-left-color: var(--accent);
     color: var(--accent);
     font-weight: 600;
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
   }
 
   /* ensure project-slug looks right in mobile menu */
@@ -1850,6 +2009,25 @@
     border-right-color: rgba(0,0,0,0.06);
     border-bottom-color: rgba(0,0,0,0.06);
     box-shadow: 0 2px 8px rgba(136, 120, 238, 0.12);
+  }
+
+  /* Hamburger menu button animations */
+  .mobile-nav button[aria-label="Toggle menu"] {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .mobile-nav button[aria-label="Toggle menu"]:hover {
+    transform: scale(1.1);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .mobile-nav button[aria-label="Toggle menu"]:active {
+    transform: scale(0.95);
+  }
+
+  /* Icon rotation animation */
+  .mobile-nav button[aria-label="Toggle menu"] svg {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   /* Tablet & small-laptop: show mobile menu as left-aligned list (not centered) */
@@ -1937,6 +2115,12 @@
       box-sizing: border-box !important;
     }
 
+    /* Stack items need consistent padding on mobile */
+    .stack-grid {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+
     /* Normalize buttons so they don't shrink or reflow awkwardly */
     .btn-primary, .btn-secondary, .btn-tertiary {
       min-height: 44px !important;
@@ -1953,8 +2137,8 @@
     .footer-main, .footer-content {
       margin-left: 0 !important;
       margin-right: 0 !important;
-      padding-left: 12px !important;
-      padding-right: 12px !important;
+      padding-left: 0.875rem !important; /* Match content-column on small screens */
+      padding-right: 1rem !important;
       width: 100% !important;
       box-sizing: border-box !important;
       text-align: left !important;
@@ -1964,22 +2148,66 @@
       gap: 6px !important;
     }
 
+    /* Fix dotted line alignment */
+    .footer-main.dotted-line {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      width: 100% !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+
     /* Stack grid: ensure consistent 2-column layout and no right offset */
-    .stack-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+    .stack-grid { 
+      grid-template-columns: repeat(2, 1fr) !important; 
+      gap: 12px !important;
+      width: 100% !important;
+      overflow: hidden !important;
+    }
 
     /* Projects grid: single column for very small phones to avoid overflow */
     .projects-frame .grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+    
     /* Compact stack items on very small phones */
-    .stack-item { padding: 8px !important; gap: 8px !important; }
-    .stack-item .stack-icon { width: 44px !important; height: 44px !important; }
-    .stack-item .font-medium { font-size: 14px !important; }
+    .stack-item { 
+      padding: 8px !important; 
+      gap: 8px !important;
+      font-size: 13px !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+    }
+    .stack-item .stack-icon { 
+      width: 36px !important; 
+      height: 36px !important;
+      flex-shrink: 0 !important;
+    }
+    .stack-item .font-medium { 
+      font-size: 13px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    .stack-item .text-sm {
+      font-size: 11px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
 
     /* Reset background overlay left offset (grid overlay) so it doesn't cause visual right shift */
     .main-content::before { left: 0 !important; width: 100% !important; }
 
     /* Make sure footer doesn't inherit desktop left margins */
     .footer-main { margin-left: 0 !important; width: 100% !important; }
-    .footer-main .content-column { text-align: left !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
+    .footer-main .content-column { 
+      text-align: left !important; 
+      margin-left: 0 !important; 
+      margin-right: 0 !important; 
+      padding-left: 0.875rem !important; /* Match content-column on small screens */
+      padding-right: 1rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
   }
 
   /* Note: previous aggressive rule for .has-expanded-sidebar removed to avoid

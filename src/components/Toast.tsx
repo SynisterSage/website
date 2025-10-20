@@ -16,7 +16,7 @@ const Toast: React.FC<Props> = ({ message = 'Message sent', open, variant = 'suc
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.25 }}
-          className="fixed top-6 right-6 z-50"
+          className="fixed top-6 right-6 z-[100] toast-notification"
         >
           <div className={`glass px-5 py-4 rounded-xl shadow-2xl border ${variant === 'success' ? 'border-green-500/30' : 'border-red-500/30'} backdrop-blur-xl`}>
             <div className="flex items-center gap-3">

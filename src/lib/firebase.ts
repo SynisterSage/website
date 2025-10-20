@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import type { FirebaseApp } from 'firebase/app';
-import { getFirestore, collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, where, writeBatch } from 'firebase/firestore';
+import { getFirestore, collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, where, writeBatch, getDoc, setDoc, increment, onSnapshot } from 'firebase/firestore';
 import type { Firestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import type { Auth } from 'firebase/auth';
@@ -43,4 +43,4 @@ try {
 }
 
 export { db, auth, app };
-export { collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, where, writeBatch };
+export { collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, where, writeBatch, getDoc, setDoc, increment, onSnapshot };

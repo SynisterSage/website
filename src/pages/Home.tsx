@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { projects } from '../data/projects'
+import { stackItems } from '../data/stack'
 import Media from '../components/Media'
 import { useHaptic } from '../hooks/useHaptic'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -268,85 +269,24 @@ const Home = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
         >
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/framer.svg" alt="Framer" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">Framer</div>
-              <div className="text-sm text-gray-600">Web Design</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/figma.svg" alt="Figma" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">Figma</div>
-              <div className="text-sm text-gray-600">General Design</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/illustrator.svg" alt="Illustrator" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">Illustrator</div>
-              <div className="text-sm text-gray-600">Vector Management</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/photoshop.svg" alt="Photoshop" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">Photoshop</div>
-              <div className="text-sm text-gray-600">Photo Editing</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/vscode.svg" alt="VS Code" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">VS Code</div>
-              <div className="text-sm text-gray-600">Backend Functions</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/shots.svg" alt="Shots" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">Shots</div>
-              <div className="text-sm text-gray-600">Mockup Creation</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/chatgpt.svg" alt="ChatGPT" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">ChatGPT</div>
-              <div className="text-sm text-gray-600">Content Generation</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 stack-item rounded-xl p-3">
-            <div className="stack-icon">
-              <img src="/icons/slack.svg" alt="Slack" className="w-8 h-8" />
-            </div>
-            <div>
-              <div className="font-medium">Slack</div>
-              <div className="text-sm text-gray-600">Collaboration</div>
-            </div>
-          </div>
+          {stackItems.map((item) => (
+            <a
+              key={item.name}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => triggerHaptic('click')}
+              className="flex items-center gap-3 stack-item rounded-xl p-3 cursor-pointer"
+            >
+              <div className="stack-icon">
+                <img src={item.icon} alt={item.name} className="w-8 h-8" />
+              </div>
+              <div>
+                <div className="font-medium">{item.name}</div>
+                <div className="text-sm text-gray-600">{item.description}</div>
+              </div>
+            </a>
+          ))}
         </motion.div>
       </div>
     </motion.main>
