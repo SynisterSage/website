@@ -1,10 +1,11 @@
 import React, { useContext, useState, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ThemeContext } from '../context/ThemeProvider'
-import { Home, FolderOpen, User, Briefcase, Mail, Moon, Sun, Eye, EyeOff } from 'lucide-react'
+import { Home, FolderOpen, User, Briefcase, Mail, Moon, Sun, Eye, EyeOff, Volume2, VolumeOff } from 'lucide-react'
 import LinkedIn from './icons/LinkedIn'
 import Instagram from './icons/Instagram'
 import { useHaptic } from '../hooks/useHaptic'
+import { gameAudio } from '../utils/gameAudio'
 
 const NavItem: React.FC<{ to: string; icon: React.ReactNode; children: React.ReactNode; collapsed?: boolean }> = ({ to, icon, children, collapsed }) => {
   const { triggerHaptic } = useHaptic()
@@ -49,6 +50,28 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange, onEasterEggTrigger }) => {
   const { triggerHaptic } = useHaptic()
   const { theme, toggle, spotlightOn, toggleSpotlight } = useContext(ThemeContext)
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('soundEnabled')
+      return raw === null ? true : raw !== 'false'
+    } catch {
+      return true
+    }
+  })
+
+  // Keep global audio utility in sync
+  React.useEffect(() => {
+    try {
+      gameAudio.setSoundEnabled(soundEnabled)
+      localStorage.setItem('soundEnabled', soundEnabled.toString())
+    } catch {}
+  }, [soundEnabled])
+  // Broadcast change so other components in same window can react
+  React.useEffect(() => {
+    try {
+      window.dispatchEvent(new CustomEvent('sound-toggle', { detail: soundEnabled }))
+    } catch {}
+  }, [soundEnabled])
   const location = useLocation()
   
   // Easter egg: track rapid clicks
@@ -153,6 +176,18 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange, onEaste
               <button
                 onClick={() => {
                   triggerHaptic('click')
+                  setSoundEnabled(s => !s)
+                }}
+                aria-label={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                style={{ color: 'var(--text-nav)' }}
+              >
+                {soundEnabled ? <Volume2 size={16} /> : <VolumeOff size={16} />}
+              </button>
+
+              <button
+                onClick={() => {
+                  triggerHaptic('click')
                   toggle()
                 }}
                 aria-label="Toggle theme"
@@ -185,6 +220,17 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapsedChange, onEaste
                 style={{ color: 'var(--text-nav)' }}
               >
                 {spotlightOn ? <Eye size={16} /> : <EyeOff size={16} />}
+              </button>
+              <button
+                onClick={() => {
+                  triggerHaptic('click')
+                  setSoundEnabled(s => !s)
+                }}
+                aria-label={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                style={{ color: 'var(--text-nav)' }}
+              >
+                {soundEnabled ? <Volume2 size={16} /> : <VolumeOff size={16} />}
               </button>
 
               <button

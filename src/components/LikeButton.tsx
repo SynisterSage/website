@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toggleProjectLike, subscribeToProjectLikes, hasLikedProject } from '../lib/likesService';
 import { useHaptic } from '../hooks/useHaptic';
+import { gameAudio } from '../utils/gameAudio';
 
 interface LikeButtonProps {
   projectId: string;
@@ -38,6 +39,14 @@ export const LikeButton = ({ projectId, className = '' }: LikeButtonProps) => {
     // Optimistic UI update
     const newLikedState = !liked;
     setLiked(newLikedState);
+    // Play distinct UI sound for like/unlike (small, unobtrusive)
+    try {
+      if (newLikedState) {
+        gameAudio.uiLike()
+      } else {
+        gameAudio.uiUnlike()
+      }
+    } catch {}
     
     if (newLikedState) {
       setShowParticles(true);

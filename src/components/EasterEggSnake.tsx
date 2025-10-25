@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trophy, Volume2, VolumeOff } from 'lucide-react';
 import { gameAudio } from '../utils/gameAudio';
 import { fetchLeaderboard as fetchLeaderboardFromService, submitScore as submitScoreToService, onLeaderboardUpdate, clearLocalLeaderboard, isFirebaseAvailable } from '../lib/leaderboardService';
+import { ThemeContext } from '../context/ThemeProvider';
 
 interface Position {
   x: number;
@@ -40,6 +41,17 @@ const getRandomSpawnPosition = (): Position => {
 };
 
 export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
+  // Helper to read CSS variables safely (guard for SSR)
+  const getCssVar = (name: string, fallback: string) => {
+    if (typeof window === 'undefined') return fallback
+    try {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
+    } catch {
+      return fallback
+    }
+  }
+  // read theme from context so we can react to changes and redraw canvas
+  const { theme } = useContext(ThemeContext)
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => {
@@ -53,18 +65,32 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
   const [isPaused, setIsPaused] = useState(false);
   const [username, setUsername] = useState(() => {
     try {
-      return sessionStorage.getItem('snakeUsername') || '';
+      return localStorage.getItem('snakeUsername') || '';
     } catch {
       return '';
     }
   });
+  // persistent per-device user id to identify the same player across sessions
+  const [userId] = useState(() => {
+    try {
+      let id = localStorage.getItem('snakeUserId')
+      if (!id) {
+        id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+        localStorage.setItem('snakeUserId', id)
+      }
+      return id
+    } catch {
+      return undefined
+    }
+  })
   const [showUsernameInput, setShowUsernameInput] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [submittingScore, setSubmittingScore] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
-      return localStorage.getItem('snakeSoundEnabled') !== 'false';
+      const raw = localStorage.getItem('soundEnabled')
+      return raw === null ? true : raw !== 'false';
     } catch {
       return true;
     }
@@ -91,9 +117,22 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     gameAudio.setSoundEnabled(soundEnabled);
     try {
-      localStorage.setItem('snakeSoundEnabled', soundEnabled.toString());
+      localStorage.setItem('soundEnabled', soundEnabled.toString());
     } catch {}
   }, [soundEnabled]);
+
+  // Listen for global sound setting changes (from Sidebar or other tabs)
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key === 'soundEnabled') {
+        try {
+          setSoundEnabled(e.newValue !== 'false')
+        } catch {}
+      }
+    }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
+  }, [])
 
   // Enable backdrop click after short delay to prevent accidental closes
   useEffect(() => {
@@ -127,6 +166,17 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
     const unsubscribe = onLeaderboardUpdate((entries) => {
       console.log('[SnakeGame] Received real-time update with', entries.length, 'entries');
       setLeaderboard(entries as LeaderboardEntry[]);
+      try {
+        if (username && username.trim()) {
+          const me = entries.find(e => e.username && e.username.toLowerCase() === username.trim().toLowerCase())
+          if (me && me.score > highScore) {
+            setHighScore(me.score)
+            try { localStorage.setItem('snakeHighScore', String(me.score)) } catch {}
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
     });
     
     if (unsubscribe) {
@@ -160,6 +210,18 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
       const entries = await fetchLeaderboardFromService();
       console.log('[SnakeGame] Fetched', entries.length, 'entries');
       setLeaderboard(entries as LeaderboardEntry[]);
+      // Sync player's high score if present in leaderboard
+      try {
+        if (username && username.trim()) {
+          const me = entries.find(e => e.username && e.username.toLowerCase() === username.trim().toLowerCase())
+          if (me && me.score > highScore) {
+            setHighScore(me.score)
+            try { localStorage.setItem('snakeHighScore', String(me.score)) } catch {}
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
     } catch (error) {
       console.error('[SnakeGame] Failed to fetch leaderboard:', error);
     }
@@ -173,10 +235,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
       console.log('[SnakeGame] Submitting score:', username.trim(), score);
       
       // Save username to session
-      sessionStorage.setItem('snakeUsername', username.trim());
+      localStorage.setItem('snakeUsername', username.trim());
 
       // Submit score using the service (which handles Firestore + fallback to localStorage)
-      const updated = await submitScoreToService(username.trim(), score);
+      const updated = await submitScoreToService(username.trim(), score, userId);
       
       console.log('[SnakeGame] Score submission result:', updated ? 'Updated' : 'Not updated (score not higher)');
       
@@ -296,16 +358,17 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+  // Read theme-aware tokens
+  const accentColor = getCssVar('--accent', '#8878EE')
+  const bgColor = getCssVar('--bg', '#ffffff')
+  const borderColor = getCssVar('--border', 'rgba(128, 128, 128, 0.08)')
 
-    // Get accent color from CSS variable
-    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
-
-    // Clear canvas
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  // Clear canvas using the page background token so canvas matches light/dark mode
+  ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw grid (subtle)
-    ctx.strokeStyle = 'rgba(128, 128, 128, 0.1)';
+    // Draw grid (subtle) using border token
+    ctx.strokeStyle = borderColor;
     ctx.lineWidth = 1;
     for (let i = 0; i <= GRID_SIZE; i++) {
       ctx.beginPath();
@@ -491,6 +554,16 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
     };
   }, [gameLoop]);
 
+  // Redraw canvas when the theme changes to avoid a mismatched initial render
+  useEffect(() => {
+    if (!canvasRef.current) return
+    try {
+      draw()
+    } catch (e) {
+      // ignore
+    }
+  }, [theme, draw])
+
   // Resume/pause game loop when isPaused changes
   useEffect(() => {
     if (!isPaused && !gameOver && gameLoopRef.current === null) {
@@ -527,7 +600,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] flex items-center justify-center"
         style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          backgroundColor: getCssVar('--overlay-bg', 'rgba(0, 0, 0, 0.8)'),
           backdropFilter: 'blur(8px)',
         }}
         onClick={backdropClickEnabled ? onClose : undefined}
@@ -539,9 +612,9 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
           onClick={(e) => e.stopPropagation()}
           className="relative glass rounded-2xl p-4 sm:p-8 max-w-[95vw] sm:max-w-none mx-4"
           style={{
-            background: 'rgba(20, 20, 30, 0.85)',
-            border: '1px solid rgba(136, 120, 238, 0.2)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            background: getCssVar('--glass-bg-heavy', 'rgba(20, 20, 30, 0.85)'),
+            border: `1px solid ${getCssVar('--glass-border', 'rgba(136, 120, 238, 0.2)')}`,
+            boxShadow: getCssVar('--glass-shadow', '0 8px 32px rgba(0, 0, 0, 0.4)'),
             backdropFilter: 'blur(12px)',
           }}
         >
@@ -604,8 +677,8 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
               height={GRID_SIZE * CELL_SIZE}
               className="rounded-lg max-w-full h-auto"
               style={{
-                border: '2px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(0, 0, 0, 0.3)',
+                border: `2px solid ${getCssVar('--glass-border', 'rgba(255, 255, 255, 0.1)')}`,
+                background: 'transparent',
                 maxWidth: '400px',
                 width: '100%',
               }}
@@ -622,7 +695,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                 }}
                 className="absolute inset-0 flex items-center justify-center rounded-lg cursor-pointer"
                 style={{
-                  background: 'rgba(0, 0, 0, 0.7)',
+                  background: getCssVar('--overlay-bg', 'rgba(0, 0, 0, 0.7)'),
                   backdropFilter: 'blur(4px)',
                 }}
               >
@@ -656,12 +729,12 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
 
             {/* Username input overlay */}
             {gameOver && showUsernameInput && (
-              <motion.div
+                <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="absolute inset-0 flex items-center justify-center rounded-lg"
                 style={{
-                  background: 'rgba(0, 0, 0, 0.8)',
+                  background: getCssVar('--overlay-bg', 'rgba(0, 0, 0, 0.8)'),
                   backdropFilter: 'blur(4px)',
                 }}
               >
@@ -673,7 +746,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                   <div className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
                     Score: {score}
                   </div>
-                  <input
+                    <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.slice(0, 20))}
@@ -685,12 +758,12 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                     maxLength={20}
                     autoFocus
                     className="w-full px-3 py-2 rounded-lg mb-3 text-sm"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      border: '1px solid rgba(136, 120, 238, 0.3)',
-                      color: 'var(--accent)',
-                      outline: 'none',
-                    }}
+                      style={{
+                        background: getCssVar('--glass-bg-light', 'rgba(255, 255, 255, 0.1)'),
+                        border: `1px solid ${getCssVar('--glass-border', 'rgba(136, 120, 238, 0.3)')}`,
+                        color: 'var(--text)',
+                        outline: 'none',
+                      }}
                   />
                   <div className="flex gap-2">
                     <button
@@ -728,10 +801,10 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="absolute inset-0 flex items-center justify-center rounded-lg"
-                style={{
-                  background: 'rgba(0, 0, 0, 0.85)',
-                  backdropFilter: 'blur(4px)',
-                }}
+                  style={{
+                    background: 'var(--overlay-bg)',
+                    backdropFilter: 'blur(4px)',
+                  }}
               >
                 <div className="text-center px-4 w-full max-w-sm">
                   <div className="flex items-center justify-center gap-2 mb-3">
@@ -751,7 +824,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                           key={entry.id}
                           className="flex justify-between items-center px-3 py-2 rounded text-xs"
                           style={{
-                            background: index === 0 ? 'rgba(136, 120, 238, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                            background: index === 0 ? 'rgba(136, 120, 238, 0.15)' : getCssVar('--glass-bg-light', 'rgba(255, 255, 255, 0.05)'),
                             color: 'var(--text)',
                             border: index === 0 ? '1px solid rgba(136, 120, 238, 0.3)' : 'none',
                           }}
@@ -794,7 +867,7 @@ export default function EasterEggSnake({ onClose }: { onClose: () => void }) {
                 animate={{ opacity: 1 }}
                 className="absolute inset-0 flex items-center justify-center rounded-lg"
                 style={{
-                  background: 'rgba(0, 0, 0, 0.7)',
+                  background: getCssVar('--overlay-bg', 'rgba(0, 0, 0, 0.7)'),
                   backdropFilter: 'blur(4px)',
                 }}
               >

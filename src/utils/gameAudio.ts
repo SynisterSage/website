@@ -30,20 +30,34 @@ class GameAudio {
     
     try {
       const ctx = this.getContext();
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      const schedule = () => {
+        try {
+          const oscillator = ctx.createOscillator();
+          const gainNode = ctx.createGain();
 
-      oscillator.frequency.value = frequency;
-      oscillator.type = type;
-      gainNode.gain.value = volume;
+          oscillator.connect(gainNode);
+          gainNode.connect(ctx.destination);
 
-      const now = ctx.currentTime;
-      oscillator.start(now);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
-      oscillator.stop(now + duration);
+          oscillator.frequency.value = frequency;
+          oscillator.type = type;
+          gainNode.gain.value = volume;
+
+          const now = ctx.currentTime;
+          oscillator.start(now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+          oscillator.stop(now + duration);
+        } catch (e) {
+          // ignore scheduling errors
+        }
+      }
+
+      // If context is suspended (browser requires user gesture), resume first
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(schedule).catch(schedule);
+      } else {
+        schedule();
+      }
     } catch (e) {
       // Silently fail if audio context is not supported
       console.warn('Audio playback failed:', e);
@@ -70,26 +84,39 @@ class GameAudio {
    */
   gameOver() {
     if (!this.soundEnabled) return;
-    
+
     try {
       const ctx = this.getContext();
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      const schedule = () => {
+        try {
+          const oscillator = ctx.createOscillator();
+          const gainNode = ctx.createGain();
 
-      oscillator.type = 'sawtooth';
-      const now = ctx.currentTime;
-      
-      oscillator.frequency.setValueAtTime(440, now);
-      oscillator.frequency.exponentialRampToValueAtTime(110, now + 0.5);
-      
-      gainNode.gain.setValueAtTime(0.3, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+          oscillator.connect(gainNode);
+          gainNode.connect(ctx.destination);
 
-      oscillator.start(now);
-      oscillator.stop(now + 0.5);
+          oscillator.type = 'sawtooth';
+          const now = ctx.currentTime;
+
+          oscillator.frequency.setValueAtTime(440, now);
+          oscillator.frequency.exponentialRampToValueAtTime(110, now + 0.5);
+
+          gainNode.gain.setValueAtTime(0.3, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+          oscillator.start(now);
+          oscillator.stop(now + 0.5);
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(schedule).catch(schedule);
+      } else {
+        schedule();
+      }
     } catch (e) {
       console.warn('Audio playback failed:', e);
     }
@@ -108,6 +135,22 @@ class GameAudio {
    */
   click() {
     this.playTone(1200, 0.05, 'sine', 0.15);
+  }
+
+  /**
+   * UI: like action - short, bright higher-pitched pop
+   */
+  uiLike() {
+    // a quick two-step pop: short bright click then a tiny upward pitch
+    this.playTone(1400, 0.045, 'sine', 0.16);
+    setTimeout(() => this.playTone(1700, 0.03, 'sine', 0.1), 40);
+  }
+
+  /**
+   * UI: unlike action - shorter, lower-pitched subtle pop
+   */
+  uiUnlike() {
+    this.playTone(800, 0.04, 'sine', 0.12);
   }
 }
 

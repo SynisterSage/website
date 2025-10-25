@@ -18,7 +18,14 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
+  const [isMuted, setIsMuted] = useState(() => {
+    try {
+      const raw = localStorage.getItem('soundEnabled')
+      return raw === null ? false : raw === 'false'
+    } catch {
+      return false
+    }
+  })
   const gameLoopRef = useRef<number | undefined>(undefined)
   
   // Audio refs
@@ -125,6 +132,32 @@ export default function NotFoundGame({ isActive, onClose }: NotFoundGameProps) {
   useEffect(() => {
     isMutedRef.current = isMuted
   }, [isMuted])
+
+  // Listen for global sound toggle (same-window) and storage changes (other tabs)
+  useEffect(() => {
+    const handler = (e: Event | StorageEvent) => {
+      try {
+        // CustomEvent from same-window
+        const detail = (e as CustomEvent).detail
+        if (typeof detail !== 'undefined') {
+          setIsMuted(!detail)
+          return
+        }
+        // StorageEvent from other tabs
+        const se = e as StorageEvent
+        if (se.key === 'soundEnabled') {
+          setIsMuted(se.newValue === 'false')
+        }
+      } catch {}
+    }
+
+    window.addEventListener('sound-toggle', handler as EventListener)
+    window.addEventListener('storage', handler as EventListener)
+    return () => {
+      window.removeEventListener('sound-toggle', handler as EventListener)
+      window.removeEventListener('storage', handler as EventListener)
+    }
+  }, [])
 
   const playSound = (soundRef: React.MutableRefObject<HTMLAudioElement | null>) => {
     if (!isMutedRef.current && soundRef.current) {

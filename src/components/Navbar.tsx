@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Moon, Sun, Home as HomeIcon, FolderOpen, Mail as MailIcon, User, Briefcase, MoreVertical } from 'lucide-react'
 import { ThemeContext } from '../context/ThemeProvider'
 import { useHaptic } from '../hooks/useHaptic'
+import { gameAudio } from '../utils/gameAudio'
 
 const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => {
   const { triggerHaptic } = useHaptic()
@@ -51,6 +52,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     triggerHaptic('click')
+    try { gameAudio.click() } catch {}
     
     // Easter egg click tracking
     const newCount = clickCount + 1
@@ -105,6 +107,8 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
         {/* Left: brand */}
         <Link
           to="/"
+          onMouseDown={() => { try { gameAudio.click() } catch {} }}
+          onTouchStart={() => { try { gameAudio.click() } catch {} }}
           onClick={handleLogoClick}
           className={`brand-link ${clickCount > 0 ? `hint-stage-${clickCount}` : 'hint-stage-0'}`}
           style={{ color: 'var(--text-nav)' }}
@@ -120,7 +124,9 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
         <div className="flex items-center gap-2 mobile-nav-icons">
           <NavLink 
             to="/" 
-            onClick={() => triggerHaptic('click')}
+            onMouseDown={() => { try { gameAudio.click() } catch {} }}
+            onTouchStart={() => { try { gameAudio.click() } catch {} }}
+            onClick={() => { triggerHaptic('click'); try { gameAudio.click() } catch {} }}
             className={({isActive}) => `mobile-nav-icon-link ${isActive ? 'active' : ''}`}
             aria-label="Home"
           >
@@ -128,7 +134,9 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
           </NavLink>
           <NavLink 
             to="/projects" 
-            onClick={() => triggerHaptic('click')}
+            onMouseDown={() => { try { gameAudio.click() } catch {} }}
+            onTouchStart={() => { try { gameAudio.click() } catch {} }}
+            onClick={() => { triggerHaptic('click'); try { gameAudio.click() } catch {} }}
             className={({isActive}) => `mobile-nav-icon-link ${isActive ? 'active' : ''}`}
             aria-label="Projects"
           >
@@ -136,7 +144,9 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
           </NavLink>
           <NavLink 
             to="/about" 
-            onClick={() => triggerHaptic('click')}
+            onMouseDown={() => { try { gameAudio.click() } catch {} }}
+            onTouchStart={() => { try { gameAudio.click() } catch {} }}
+            onClick={() => { triggerHaptic('click'); try { gameAudio.click() } catch {} }}
             className={({isActive}) => `mobile-nav-icon-link ${isActive ? 'active' : ''}`}
             aria-label="About"
           >
@@ -144,7 +154,9 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
           </NavLink>
           <NavLink 
             to="/services" 
-            onClick={() => triggerHaptic('click')}
+            onMouseDown={() => { try { gameAudio.click() } catch {} }}
+            onTouchStart={() => { try { gameAudio.click() } catch {} }}
+            onClick={() => { triggerHaptic('click'); try { gameAudio.click() } catch {} }}
             className={({isActive}) => `mobile-nav-icon-link ${isActive ? 'active' : ''}`}
             aria-label="Services"
           >
@@ -152,7 +164,9 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
           </NavLink>
           <NavLink 
             to="/contact" 
-            onClick={() => triggerHaptic('click')}
+            onMouseDown={() => { try { gameAudio.click() } catch {} }}
+            onTouchStart={() => { try { gameAudio.click() } catch {} }}
+            onClick={() => { triggerHaptic('click'); try { gameAudio.click() } catch {} }}
             className={({isActive}) => `mobile-nav-icon-link ${isActive ? 'active' : ''}`}
             aria-label="Contact"
           >
@@ -168,7 +182,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
             target="_blank" 
             rel="noreferrer" 
             className="mobile-nav-social-link mobile-nav-social-tablet"
-            onClick={() => triggerHaptic('click')}
+            onClick={() => { triggerHaptic('click'); try { gameAudio.click() } catch {} }}
             aria-label="LinkedIn"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -180,7 +194,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
             target="_blank" 
             rel="noreferrer" 
             className="mobile-nav-social-link mobile-nav-social-tablet"
-            onClick={() => triggerHaptic('click')}
+            onClick={() => { triggerHaptic('click'); try { gameAudio.click() } catch {} }}
             aria-label="Instagram"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -192,6 +206,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
           <button
             onClick={() => {
               triggerHaptic('click')
+              try { gameAudio.click() } catch {}
               toggle()
             }}
             aria-label="Toggle theme"
@@ -206,6 +221,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
             ref={dropdownButtonRef}
             onClick={() => {
               triggerHaptic('click')
+              try { gameAudio.click() } catch {}
               setIsDropdownOpen(!isDropdownOpen)
             }}
             aria-label="More options"
@@ -228,6 +244,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
                 className="mobile-nav-dropdown-item"
                 onClick={() => {
                   triggerHaptic('click')
+                  try { gameAudio.click() } catch {}
                   setIsDropdownOpen(false)
                 }}
               >
@@ -243,6 +260,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
                 className="mobile-nav-dropdown-item"
                 onClick={() => {
                   triggerHaptic('click')
+                  try { gameAudio.click() } catch {}
                   setIsDropdownOpen(false)
                 }}
               >
@@ -254,6 +272,7 @@ const Navbar = ({ onEasterEggTrigger }: { onEasterEggTrigger?: () => void }) => 
               <button
                 onClick={() => {
                   triggerHaptic('click')
+                  try { gameAudio.click() } catch {}
                   toggle()
                   setIsDropdownOpen(false)
                 }}

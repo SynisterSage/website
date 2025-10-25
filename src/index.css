@@ -270,6 +270,33 @@
   opacity: 0.9;
 }
 
+/* Circular social icon used on About page (small circular buttons) */
+.about-social-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  transition: background 180ms var(--ui-ease), transform 160ms var(--ui-ease), color 160ms var(--ui-ease);
+}
+
+.about-social-circle svg { width: 18px; height: 18px; }
+
+.about-social-circle:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  transform: translateY(-2px);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .about-social-circle { width: 44px; height: 44px; }
+  .about-social-circle svg { width: 16px; height: 16px; }
+}
+
 /* Light mode styling */
 :root:not(.dark) .about-social-link {
   background: rgba(255, 255, 255, 0.7);
@@ -396,6 +423,8 @@
     /* Selection colors for light mode */
     --selection-bg: color-mix(in srgb, var(--accent) 65%, white 35%);
     --selection-color: #ffffff;
+    /* Overlay color used for modals and game leaderboard (light theme uses light overlay) */
+    --overlay-bg: rgba(255, 255, 255, 0.95);
   }
 
   /* Dark theme */
@@ -418,6 +447,7 @@
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     --glass-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
     --glass-shadow-heavy: 0 12px 48px rgba(0, 0, 0, 0.6);
+  --overlay-bg: rgba(0, 0, 0, 0.85);
     /* Selection colors for dark mode */
     --selection-bg: color-mix(in srgb, var(--accent) 65%, black 15%);
     --selection-color: #ffffff;
@@ -876,7 +906,7 @@
 
   .project-description-content {
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
     opacity: 0;
@@ -910,7 +940,14 @@
     .project-card-hover:hover .project-description-content {
       opacity: 1;
       transform: translate3d(0, 0, 0);
-      pointer-events: auto;
+      pointer-events: none; /* Keep pointer-events none even on hover to avoid blocking clicks */
+    }
+  }
+
+  /* Mobile/Tablet: ensure description never shows and doesn't block interactions */
+  @media (pointer: coarse), (hover: none) {
+    .project-description-content {
+      display: none !important;
     }
   }
 
@@ -2087,6 +2124,23 @@
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+  }
+
+  /* Improve touch responsiveness for mobile/tablet nav elements.
+     Ensures taps are handled immediately (no 300ms delay), removes tap highlight,
+     and avoids accidental text selection. Limits the rule to interactive elements
+     so it doesn't affect the rest of the page. */
+  .mobile-nav,
+  .mobile-nav a,
+  .mobile-nav button,
+  .mobile-nav .mobile-nav-icon-link,
+  .mobile-nav .mobile-nav-social-link,
+  .mobile-nav .mobile-nav-dropdown-toggle,
+  .mobile-nav .brand-link {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   /* Mobile nav icons - horizontal icon bar */
