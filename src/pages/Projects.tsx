@@ -160,7 +160,7 @@ const Projects = () => {
               >
                 <Link 
                   to={`/projects/${project.id}`} 
-                  className="group block"
+                  className="group block project-card-hover"
                   onMouseEnter={() => triggerHaptic('hover')}
                   onClick={() => triggerHaptic('click')}
                 >
@@ -175,12 +175,23 @@ const Projects = () => {
                     
                     {/* Project Info Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-                      <h3 className="text-3xl font-semibold text-white mb-2 transition-colors">
-                        {project.title}
-                      </h3>
-                      <p className="text-base text-gray-200">
-                        {project.categories.join(' \u2022 ')}
-                      </p>
+                      <div className="project-info-container">
+                        {/* Title content - visible by default */}
+                        <div className="project-title-content">
+                          <h3 className="text-3xl font-semibold text-white mb-2 transition-colors">
+                            {project.title}
+                          </h3>
+                          <p className="text-base text-gray-200">
+                            {project.categories.join(' \u2022 ')}
+                          </p>
+                        </div>
+                        {/* Description content - shows on hover */}
+                        <div className="project-description-content">
+                          <p className="text-base text-white">
+                            {project.description}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   </TiltCard>

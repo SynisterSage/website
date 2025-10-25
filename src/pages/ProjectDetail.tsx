@@ -296,7 +296,7 @@ const ProjectDetail = () => {
                   <Link
                     key={otherProject.id}
                     to={`/projects/${otherProject.id}`}
-                    className="group block"
+                    className="group block project-card-hover"
                     data-prefetch-src={thumb}
                     onMouseEnter={() => triggerHaptic('hover')}
                     onClick={() => triggerHaptic('click')}
@@ -312,12 +312,23 @@ const ProjectDetail = () => {
                       </div>
 
                       <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-                        <h3 className="text-lg font-semibold text-white mb-1 transition-colors">
-                          {otherProject.title}
-                        </h3>
-                        <p className="text-sm text-gray-200">
-                          {otherProject.categories.join(' • ')}
-                        </p>
+                        <div className="project-info-container">
+                          {/* Title content - visible by default */}
+                          <div className="project-title-content">
+                            <h3 className="text-lg font-semibold text-white mb-1 transition-colors">
+                              {otherProject.title}
+                            </h3>
+                            <p className="text-sm text-gray-200">
+                              {otherProject.categories.join(' • ')}
+                            </p>
+                          </div>
+                          {/* Description content - shows on hover */}
+                          <div className="project-description-content">
+                            <p className="text-sm text-white">
+                              {otherProject.description}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </Link>

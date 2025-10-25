@@ -16,6 +16,8 @@ const TiltCard: React.FC<Props> = ({ children, className = '', disabled = false 
     el.style.setProperty('--tx', '0deg')
     el.style.setProperty('--ty', '0deg')
     el.style.setProperty('--ax', '0%')
+    el.style.setProperty('--sx', '0px')
+    el.style.setProperty('--sy', '0px')
   }, [])
 
   function handleMove(e: React.MouseEvent) {
@@ -41,6 +43,8 @@ const TiltCard: React.FC<Props> = ({ children, className = '', disabled = false 
     el.style.setProperty('--tx', '0deg')
     el.style.setProperty('--ty', '0deg')
     el.style.setProperty('--ax', '0%')
+    el.style.setProperty('--sx', '0px')
+    el.style.setProperty('--sy', '0px')
   }
 
   return (
@@ -50,7 +54,12 @@ const TiltCard: React.FC<Props> = ({ children, className = '', disabled = false 
       onMouseLeave={handleLeave}
       className={`rounded-2xl overflow-hidden ${className}`}
       // inline transform consumes CSS vars set above
-      style={{ transform: 'perspective(900px) rotateX(var(--ty)) rotateY(var(--tx))', willChange: 'transform' }}
+      style={{ 
+        transform: 'perspective(900px) rotateX(var(--ty)) rotateY(var(--tx))', 
+        willChange: 'transform',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden'
+      }}
     >
       {children}
     </div>

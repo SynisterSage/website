@@ -9,6 +9,13 @@ import HapticToggle from './components/HapticToggle'
 import PreferencesNotice from './components/PreferencesNotice'
 import EasterEggSnake from './components/EasterEggSnake'
 import { initGA, logPageView } from './utils/analytics'
+import { 
+  HomePageSkeleton, 
+  ProjectsPageSkeleton, 
+  ProjectDetailSkeleton,
+  ContactPageSkeleton,
+  AboutPageSkeleton
+} from './components/PageSkeletons'
 
 // Lazy load route components for code splitting and faster initial load
 const Home = lazy(() => import('./pages/Home'))
@@ -168,6 +175,20 @@ function App() {
     )
   }
 
+  function LoadingFallback() {
+    const location = useLocation()
+    
+    // Return appropriate skeleton based on current route
+    if (location.pathname === '/') return <HomePageSkeleton />
+    if (location.pathname === '/projects') return <ProjectsPageSkeleton />
+    if (location.pathname.startsWith('/projects/')) return <ProjectDetailSkeleton />
+    if (location.pathname === '/contact') return <ContactPageSkeleton />
+    if (location.pathname === '/about') return <AboutPageSkeleton />
+    
+    // Default fallback
+    return <div className="w-full min-h-screen flex items-center justify-center"><div style={{ color: 'var(--muted)' }}>Loading...</div></div>
+  }
+
   return (
     <Router>
       <div className={`min-h-screen ${sidebarCollapsed ? 'has-collapsed-sidebar' : 'has-expanded-sidebar'}`} style={{ ['--sidebar-width' as any]: sidebarCollapsed ? '72px' : '18rem' }}>
@@ -179,7 +200,7 @@ function App() {
         <main className="main-content w-full">
           <GridSpotlight />
           <AnimatePresence mode="wait">
-            <Suspense fallback={<div className="w-full min-h-screen flex items-center justify-center"><div style={{ color: 'var(--muted)' }}>Loading...</div></div>}>
+            <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 <Route path="/splash" element={<Splash />} />
                 <Route path="/" element={<Home />} />
